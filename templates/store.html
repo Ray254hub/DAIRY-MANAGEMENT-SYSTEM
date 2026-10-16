@@ -1,0 +1,884 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- FontAwesome 6 & Styling Rules -->
+<style>
+    /* ==========================================================
+       1. HIDE BASE LAYOUT SIDEBAR & EXPAND CONTAINER
+       ========================================================== */
+    .sidebar, 
+    #sidebar, 
+    .main-sidebar, 
+    .app-sidebar, 
+    .nav-sidebar, 
+    aside,
+    [class*="sidebar"] {
+        display: none !important;
+        width: 0 !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+
+    .main-content, 
+    .content-wrapper, 
+    .main-wrapper, 
+    #content, 
+    main {
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* ==========================================================
+       2. HIGH-PERFORMANCE UI COMPONENTS
+       ========================================================== */
+    .nav-header-btn {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        color: #1e293b;
+        font-weight: 600;
+        transition: background 0.15s ease, border-color 0.15s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        font-size: 0.85rem;
+        cursor: pointer;
+    }
+
+    .nav-header-btn:hover {
+        background: #f8fafc;
+        border-color: #0066ff;
+        color: #0066ff;
+    }
+
+    .brand-title-3d {
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-weight: 800;
+        font-size: 1.15rem;
+        letter-spacing: 0.8px;
+        color: #0052cc;
+        text-transform: uppercase;
+    }
+
+    .icon-3d {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: #eff6ff;
+        border: 1px solid #dbeafe;
+        color: #0066ff;
+        font-size: 0.95rem;
+        flex-shrink: 0;
+    }
+
+    .glass-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    }
+
+    .pulse-badge {
+        width: 8px;
+        height: 8px;
+        background-color: #10b981;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .store-fullscreen-wrapper {
+        position: relative;
+        width: 100% !important;
+        min-height: 100vh !important;
+        padding: 16px !important;
+        box-sizing: border-box !important;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 0.85rem;
+        color: #0f172a;
+        background: #f1f5f9;
+        overflow-x: hidden;
+        z-index: 9999;
+    }
+
+    @media (min-width: 768px) {
+        .store-fullscreen-wrapper {
+            padding: 24px 32px !important;
+        }
+    }
+
+    .store-header {
+        position: relative;
+        z-index: 100;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 12px 18px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        margin-bottom: 20px;
+        width: 100%;
+    }
+
+    /* Tab Navigation */
+    .store-tabs {
+        border-bottom: none;
+        margin-bottom: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .store-tabs .nav-link {
+        color: #475569;
+        font-weight: 600;
+        font-size: 0.85rem;
+        padding: 8px 16px;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        background: #ffffff;
+        transition: all 0.15s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .store-tabs .nav-link:hover {
+        background: #f8fafc;
+        color: #0066ff;
+    }
+
+    .store-tabs .nav-link.active {
+        color: #ffffff;
+        background: #0066ff;
+        border-color: #0066ff;
+    }
+
+    .store-pane { display: none; }
+    .store-pane.active { display: block; }
+
+    /* Horizontal Carousel Cards */
+    .carousel-container-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .products-scroll-row {
+        display: flex;
+        gap: 16px;
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        padding: 8px 4px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .products-scroll-row::-webkit-scrollbar {
+        height: 6px;
+    }
+    .products-scroll-row::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+
+    .scroll-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: #0f172a;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        cursor: pointer;
+        transition: background 0.15s ease;
+    }
+
+    .scroll-btn:hover {
+        background: #0066ff;
+        color: #ffffff;
+    }
+
+    .scroll-btn-left { left: -15px; }
+    .scroll-btn-right { right: -15px; }
+
+    .jumia-card {
+        min-width: 170px;
+        max-width: 170px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+        flex-shrink: 0;
+    }
+
+    .jumia-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    }
+
+    .jumia-img-box {
+        width: 100%;
+        height: 110px;
+        border-radius: 8px;
+        background: #f8fafc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        margin-bottom: 8px;
+        border: 1px solid #f1f5f9;
+    }
+
+    .jumia-img-box img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    .form-control-glass, .form-select-glass {
+        min-height: 42px;
+        padding: 8px 14px;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        background: #ffffff;
+        color: #0f172a;
+    }
+
+    .table-responsive {
+        border-radius: 10px;
+        overflow-x: auto;
+        border: 1px solid #e2e8f0;
+        width: 100%;
+    }
+
+    table.store-table {
+        width: 100%;
+        margin-bottom: 0;
+        font-size: 0.85rem;
+        border-collapse: collapse;
+    }
+
+    table.store-table th {
+        background: #0f172a;
+        color: #ffffff;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        padding: 12px 14px;
+        white-space: nowrap;
+    }
+
+    table.store-table td {
+        padding: 12px 14px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        background: #ffffff;
+        white-space: nowrap;
+    }
+
+    .footer-bar {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        padding: 12px 18px;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        margin-top: 20px;
+        width: 100%;
+    }
+
+    .balance-card {
+        background: #f8fafc;
+        border: 1px dashed #cbd5e1;
+        border-radius: 8px;
+        padding: 10px 14px;
+    }
+</style>
+
+<div class="store-fullscreen-wrapper" id="store_fullscreen_container">
+
+    <!-- Top Navigation Header -->
+    <div class="store-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            <a href="/" class="nav-header-btn">
+                <i class="fa-solid fa-arrow-left text-primary"></i>
+                <span class="fw-bold text-dark">Main Menu</span>
+            </a>
+            <button class="nav-header-btn" onclick="toggleFullScreenMode()">
+                <span class="icon-3d" style="width:26px; height:26px; font-size:0.75rem;"><i class="fa-solid fa-expand" id="fullscreen_icon"></i></span>
+                <span class="fw-bold text-dark" id="fullscreen_btn_text">Maximize View</span>
+            </button>
+            <div class="border-start ps-3 ms-1 d-flex align-items-center gap-3">
+                <span class="icon-3d text-primary" style="width:36px; height:36px; font-size:1rem;"><i class="fa-solid fa-store"></i></span>
+                <div>
+                    <h6 class="brand-title-3d m-0" style="font-size: 1.1rem;">Gakuri Store & Inventory</h6>
+                    <small class="text-muted d-block" style="font-size: 0.72rem;">Animal Feeds, Supplies & Monthly Milk Deductions</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center flex-wrap gap-2">
+            <a href="/customers" class="nav-header-btn">
+                <span class="icon-3d" style="width:26px; height:26px; font-size:0.75rem;"><i class="fa-solid fa-users"></i></span>
+                <span class="fw-bold text-dark">Customers</span>
+            </a>
+            <a href="/accountant" class="nav-header-btn">
+                <span class="icon-3d" style="width:26px; height:26px; font-size:0.75rem;"><i class="fa-solid fa-calculator"></i></span>
+                <span class="fw-bold text-dark">Accountant</span>
+            </a>
+            <div class="glass-card px-3 py-2 d-flex align-items-center gap-2">
+                <span class="pulse-badge"></span>
+                <span class="fw-bold text-dark" style="font-size: 0.78rem;">gakuri_dairy.db Active</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs store-tabs">
+        <li class="nav-item">
+            <button class="nav-link active" onclick="switchStoreTab(event, 'tab-catalog')">
+                <span class="icon-3d" style="width:24px; height:24px; font-size:0.75rem;"><i class="fa-solid fa-shop"></i></span>
+                Store Front (Purchase)
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" onclick="switchStoreTab(event, 'tab-manage')">
+                <span class="icon-3d" style="width:24px; height:24px; font-size:0.75rem;"><i class="fa-solid fa-pen-to-square"></i></span>
+                Manage Store Items (Edit Mode)
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" onclick="switchStoreTab(event, 'tab-purchases-log')">
+                <span class="icon-3d" style="width:24px; height:24px; font-size:0.75rem;"><i class="fa-solid fa-receipt"></i></span>
+                Purchase History Log
+            </button>
+        </li>
+    </ul>
+
+    <!-- TAB 1: STORE FRONT -->
+    <div id="tab-catalog" class="store-pane active">
+        <!-- Showcase Scroll Row -->
+        <div class="glass-card p-3 p-md-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold text-dark m-0 d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-fire text-danger"></i> Fast Moving Store Items
+                </h6>
+                <small class="text-muted fw-bold">Scroll horizontally to view available inventory</small>
+            </div>
+
+            <div class="carousel-container-wrapper">
+                <button class="scroll-btn scroll-btn-left" onclick="scrollStoreRow(-300)"><i class="fa-solid fa-chevron-left"></i></button>
+
+                <div class="products-scroll-row" id="jumia_products_row">
+                    <!-- Dynamic rendering from storeItems -->
+                </div>
+
+                <button class="scroll-btn scroll-btn-right" onclick="scrollStoreRow(300)"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+        </div>
+
+        <!-- Store Purchase Action Box -->
+        <div class="glass-card p-3 p-md-4">
+            <h6 class="fw-bold text-dark mb-3"><i class="fa-solid fa-cart-shopping me-2 text-primary"></i>Customer Store Purchase (Milk Income Deduction)</h6>
+            <form id="storePurchaseForm" onsubmit="processCustomerPurchase(event)">
+                <div class="row g-3">
+                    <div class="col-12 col-md-5">
+                        <label class="fw-bold mb-1 text-dark">Select Customer:</label>
+                        <select id="pur_customer_id" class="form-select form-select-glass fw-semibold" required onchange="fetchCustomerSummary(this.value)">
+                            <option value="">-- Select Customer --</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                        <label class="fw-bold mb-1 text-dark">Select Product:</label>
+                        <select id="pur_item_id" class="form-select form-select-glass fw-semibold" required onchange="updatePurchasePreview()">
+                            <option value="">-- Choose Item --</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-md-3">
+                        <label class="fw-bold mb-1 text-dark">Quantity:</label>
+                        <input type="number" id="pur_qty" class="form-control form-control-glass fw-semibold" min="1" value="1" required oninput="updatePurchasePreview()">
+                    </div>
+
+                    <!-- Customer Income vs Balance Card -->
+                    <div class="col-12" id="customer_summary_box" style="display: none;">
+                        <div class="balance-card d-flex flex-wrap justify-content-between align-items-center gap-2">
+                            <div>
+                                <span class="fw-bold text-dark" id="summary_cust_name">Customer</span>
+                                <small class="text-muted ms-2">(ID: <span id="summary_cust_id"></span>)</small>
+                            </div>
+                            <div class="d-flex align-items-center gap-3 text-end">
+                                <div>
+                                    <small class="text-muted d-block">Milk Delivered</small>
+                                    <span class="fw-bold text-dark" id="summary_total_liters">0.00 L</span>
+                                </div>
+                                <div>
+                                    <small class="text-muted d-block">Gross Earned (@ 50/L)</small>
+                                    <span class="fw-bold text-success" id="summary_total_earned">Ksh 0.00</span>
+                                </div>
+                                <div>
+                                    <small class="text-muted d-block">Store Deductions</small>
+                                    <span class="fw-bold text-danger" id="summary_total_spent">Ksh 0.00</span>
+                                </div>
+                                <div class="border-start ps-3">
+                                    <small class="text-muted d-block">Net Balance Available</small>
+                                    <span class="fw-bold text-primary fs-6" id="summary_net_balance">Ksh 0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="p-3 bg-light rounded border d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div>
+                                <small class="text-muted fw-bold d-block">Total Purchase Cost:</small>
+                                <span class="fs-5 fw-bold text-primary" id="lbl_total_price">Ksh 0.00</span>
+                            </div>
+                            <button type="submit" id="btn_submit_purchase" class="btn btn-success rounded-pill px-4 py-2 fw-bold shadow-sm">
+                                <i class="fa-solid fa-check me-2"></i>Confirm & Deduct
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TAB 2: MANAGE STORE ITEMS -->
+    <div id="tab-manage" class="store-pane">
+        <div class="row g-3">
+            <!-- Form to Add/Edit Product -->
+            <div class="col-12 col-lg-5">
+                <div class="glass-card p-3 p-md-4">
+                    <h6 class="fw-bold text-dark mb-3" id="form_title_text"><i class="fa-solid fa-plus me-2 text-primary"></i>Add / Edit Store Product</h6>
+                    <form id="storeProductForm" onsubmit="saveStoreItem(event)">
+                        <input type="hidden" id="edit_item_id" name="item_id">
+                        
+                        <div class="mb-3">
+                            <label class="fw-bold mb-1">Item Name *:</label>
+                            <input type="text" id="item_name" name="item_name" class="form-control form-control-glass" placeholder="e.g. Dairy Meal, Salt Lick" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="fw-bold mb-1">Category:</label>
+                            <select id="category" name="category" class="form-select form-select-glass">
+                                <option value="Farm Feeds">Farm Feeds</option>
+                                <option value="Animal Feeds">Animal Feeds</option>
+                                <option value="Supplies & Medicines">Supplies & Medicines</option>
+                                <option value="Equipment">Equipment</option>
+                            </select>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="fw-bold mb-1">Price per Unit (Ksh) *:</label>
+                                <input type="number" step="0.01" id="price" name="price" class="form-control form-control-glass" placeholder="2500" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="fw-bold mb-1">Quantity in Stock *:</label>
+                                <input type="number" id="quantity" name="quantity" class="form-control form-control-glass" placeholder="30" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="fw-bold mb-1">Unit Label:</label>
+                            <input type="text" id="unit_label" name="unit_label" class="form-control form-control-glass" placeholder="bags, kg, liters, pcs" value="bags">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="fw-bold mb-1">Product Picture (Optional - Auto Resized):</label>
+                            <input type="file" id="item_image" name="item_image" accept="image/*" class="form-control form-control-glass">
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <button type="button" class="btn btn-outline-secondary rounded-pill fw-bold" onclick="resetStoreForm()">
+                                Reset Form
+                            </button>
+                            <button type="submit" id="btn_save_item" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm">
+                                <i class="fa-solid fa-floppy-disk me-2"></i>Save Product
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Table of Inventory -->
+            <div class="col-12 col-lg-7">
+                <div class="glass-card p-3 p-md-4">
+                    <h6 class="fw-bold text-dark mb-3"><i class="fa-solid fa-list me-2 text-primary"></i>Current Inventory Listing</h6>
+                    <div class="table-responsive">
+                        <table class="table store-table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Item Name</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>In Stock</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="store_inventory_tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: PURCHASE HISTORY LOG -->
+    <div id="tab-purchases-log" class="store-pane">
+        <div class="glass-card p-3 p-md-4">
+            <h6 class="fw-bold text-dark mb-3"><i class="fa-solid fa-clock-rotate-left me-2 text-primary"></i>Recent Store Deductions History</h6>
+            <div class="table-responsive">
+                <table class="table store-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Customer ID</th>
+                            <th>Customer Name</th>
+                            <th>Product Name</th>
+                            <th>Qty</th>
+                            <th>Unit Price</th>
+                            <th>Total Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody id="purchases_tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Bar -->
+    <div class="footer-bar d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <span class="icon-3d" style="width:24px; height:24px; font-size:0.75rem;"><i class="fa-solid fa-layer-group"></i></span>
+            <span class="fw-bold">Module: Store & Inventory</span>
+        </div>
+        <div class="text-success fw-bold d-flex align-items-center gap-2">
+            <span class="pulse-badge"></span>
+            <span>Connected to Python app.py (gakuri_dairy.db)</span>
+        </div>
+        <div>Date: <span id="footer_date" class="fw-bold text-primary"></span></div>
+    </div>
+</div>
+
+<script>
+    // Context Data injected from app.py
+    let customersList = {{ customers|tojson|safe }};
+    let storeItems = {{ items|tojson|safe }};
+    let storePurchases = {{ purchases|tojson|safe }};
+
+    document.getElementById('footer_date').innerText = new Date().toISOString().split('T')[0];
+
+    function toggleFullScreenMode() {
+        const elem = document.getElementById("store_fullscreen_container");
+        const icon = document.getElementById("fullscreen_icon");
+        const btnText = document.getElementById("fullscreen_btn_text");
+
+        const isFullscreenActive = document.fullscreenElement || document.webkitFullscreenElement;
+
+        if (!isFullscreenActive) {
+            if (elem.requestFullscreen) elem.requestFullscreen();
+            else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+            if (icon) icon.className = "fa-solid fa-compress";
+            if (btnText) btnText.innerText = "Exit View";
+        } else {
+            if (document.exitFullscreen) document.exitFullscreen();
+            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            if (icon) icon.className = "fa-solid fa-expand";
+            if (btnText) btnText.innerText = "Maximize View";
+        }
+    }
+
+    function switchStoreTab(evt, tabId) {
+        if (evt) evt.preventDefault();
+        document.querySelectorAll('.store-tabs .nav-link').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.store-pane').forEach(p => p.classList.remove('active'));
+
+        if (evt && evt.currentTarget) evt.currentTarget.classList.add('active');
+        const pane = document.getElementById(tabId);
+        if (pane) pane.classList.add('active');
+    }
+
+    function scrollStoreRow(amount) {
+        document.getElementById('jumia_products_row').scrollBy({ left: amount, behavior: 'smooth' });
+    }
+
+    function populateCustomerDropdown() {
+        const sel = document.getElementById('pur_customer_id');
+        sel.innerHTML = '<option value="">-- Select Customer --</option>';
+        customersList.forEach(c => {
+            sel.innerHTML += `<option value="${c.id}">${c.id} - ${c.full_name || c.name}</option>`;
+        });
+    }
+
+    function populateProductDropdown() {
+        const sel = document.getElementById('pur_item_id');
+        sel.innerHTML = '<option value="">-- Choose Item --</option>';
+        storeItems.forEach(i => {
+            if(i.quantity > 0) {
+                sel.innerHTML += `<option value="${i.id}">${i.item_name} (Ksh ${i.price} / ${i.unit_label}) - Stock: ${i.quantity}</option>`;
+            }
+        });
+    }
+
+    async function fetchCustomerSummary(customerId) {
+        const box = document.getElementById('customer_summary_box');
+        if (!customerId) {
+            box.style.display = 'none';
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/store/customer_summary/${encodeURIComponent(customerId)}`);
+            if (res.ok) {
+                const data = await res.json();
+                document.getElementById('summary_cust_name').innerText = data.full_name;
+                document.getElementById('summary_cust_id').innerText = data.customer_id;
+                document.getElementById('summary_total_liters').innerText = `${data.total_liters} L`;
+                document.getElementById('summary_total_earned').innerText = `Ksh ${data.total_earned.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                document.getElementById('summary_total_spent').innerText = `Ksh ${data.total_spent.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                document.getElementById('summary_net_balance').innerText = `Ksh ${data.net_balance.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                box.style.display = 'block';
+            } else {
+                box.style.display = 'none';
+            }
+        } catch(err) {
+            console.error("Error fetching customer summary:", err);
+            box.style.display = 'none';
+        }
+    }
+
+    function renderJumiaShowcase() {
+        const container = document.getElementById('jumia_products_row');
+        container.innerHTML = "";
+
+        if (storeItems.length === 0) {
+            container.innerHTML = '<div class="text-muted p-3 fw-bold">No products added to store yet. Use Edit Mode tab to add items.</div>';
+            return;
+        }
+
+        storeItems.forEach(item => {
+            const imgHtml = item.image_data 
+                ? `<img src="${item.image_data}" alt="${item.item_name}">`
+                : `<i class="fa-solid fa-wheat-awn text-muted fs-1"></i>`;
+
+            container.innerHTML += `
+                <div class="jumia-card">
+                    <div class="jumia-img-box">${imgHtml}</div>
+                    <div>
+                        <div class="fw-bold text-dark text-truncate" style="font-size:0.8rem;" title="${item.item_name}">${item.item_name}</div>
+                        <small class="text-muted d-block" style="font-size:0.7rem;">${item.category}</small>
+                        <div class="fw-bold text-primary mt-1" style="font-size:0.85rem;">Ksh ${item.price}</div>
+                        <span class="badge ${item.quantity > 5 ? 'bg-success' : 'bg-warning'} rounded-pill" style="font-size:0.65rem;">
+                            ${item.quantity} ${item.unit_label} left
+                        </span>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function renderInventoryTable() {
+        const tbody = document.getElementById('store_inventory_tbody');
+        tbody.innerHTML = "";
+
+        storeItems.forEach(item => {
+            const imgHtml = item.image_data 
+                ? `<img src="${item.image_data}" style="width:36px; height:36px; object-fit:cover; border-radius:6px;">`
+                : `<span class="badge bg-light text-secondary border"><i class="fa-solid fa-image"></i></span>`;
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${imgHtml}</td>
+                    <td class="fw-bold text-dark">${item.item_name}</td>
+                    <td>${item.category}</td>
+                    <td class="fw-bold text-primary">Ksh ${item.price}</td>
+                    <td><span class="badge ${item.quantity > 0 ? 'bg-success' : 'bg-danger'}">${item.quantity} ${item.unit_label}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editStoreItem(${item.id})"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteStoreItem(${item.id})"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    function renderPurchasesTable() {
+        const tbody = document.getElementById('purchases_tbody');
+        tbody.innerHTML = "";
+
+        storePurchases.forEach(p => {
+            const cust = customersList.find(c => c.id === p.customer_id);
+            const custName = cust ? (cust.full_name || cust.name) : (p.customer_id || 'Unknown');
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${p.purchase_date || '-'}</td>
+                    <td><span class="badge bg-secondary font-monospace">${p.customer_id}</span></td>
+                    <td class="fw-semibold text-dark">${custName}</td>
+                    <td>${p.item_name}</td>
+                    <td>${p.quantity}</td>
+                    <td>Ksh ${p.unit_price}</td>
+                    <td class="fw-bold text-success">Ksh ${p.total_cost}</td>
+                </tr>
+            `;
+        });
+    }
+
+    function updatePurchasePreview() {
+        const itemId = document.getElementById('pur_item_id').value;
+        const qty = parseInt(document.getElementById('pur_qty').value) || 0;
+        const item = storeItems.find(i => i.id == itemId);
+
+        if (item && qty > 0) {
+            const total = item.price * qty;
+            document.getElementById('lbl_total_price').innerText = `Ksh ${total.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+        } else {
+            document.getElementById('lbl_total_price').innerText = 'Ksh 0.00';
+        }
+    }
+
+    function editStoreItem(id) {
+        const item = storeItems.find(i => i.id == id);
+        if (!item) return;
+
+        document.getElementById('edit_item_id').value = item.id;
+        document.getElementById('item_name').value = item.item_name;
+        document.getElementById('category').value = item.category;
+        document.getElementById('price').value = item.price;
+        document.getElementById('quantity').value = item.quantity;
+        document.getElementById('unit_label').value = item.unit_label;
+        document.getElementById('form_title_text').innerHTML = `<i class="fa-solid fa-pen-to-square me-2 text-primary"></i>Edit Store Product #${item.id}`;
+    }
+
+    function resetStoreForm() {
+        document.getElementById('storeProductForm').reset();
+        document.getElementById('edit_item_id').value = "";
+        document.getElementById('form_title_text').innerHTML = `<i class="fa-solid fa-plus me-2 text-primary"></i>Add / Edit Store Product`;
+    }
+
+    async function saveStoreItem(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btn_save_item');
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i>Saving...`;
+
+        const formData = new FormData(document.getElementById('storeProductForm'));
+
+        try {
+            const res = await fetch('/api/store/items', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            if (res.ok && data.status === 'success') {
+                alert("Store product saved cleanly!");
+                window.location.reload();
+            } else {
+                alert(data.message || "Error saving store product.");
+            }
+        } catch(err) {
+            console.error(err);
+            alert("Connection error while saving item.");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i>Save Product`;
+        }
+    }
+
+    async function deleteStoreItem(id) {
+        if (!confirm(`Are you sure you want to delete store item #${id}?`)) return;
+        try {
+            const res = await fetch(`/api/store/items/delete/${id}`, { method: 'POST' });
+            if (res.ok) {
+                alert("Item deleted successfully!");
+                window.location.reload();
+            } else {
+                alert("Failed to delete item.");
+            }
+        } catch(err) {
+            console.error(err);
+        }
+    }
+
+    async function processCustomerPurchase(e, confirmTopup = false) {
+        if (e) e.preventDefault();
+
+        const customerId = document.getElementById('pur_customer_id').value;
+        const itemId = document.getElementById('pur_item_id').value;
+        const quantity = document.getElementById('pur_qty').value;
+
+        if (!customerId || !itemId || quantity <= 0) {
+            alert("Please complete all required fields.");
+            return;
+        }
+
+        const btn = document.getElementById('btn_submit_purchase');
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i>Processing...`;
+
+        const payload = {
+            customer_id: customerId,
+            item_id: parseInt(itemId),
+            quantity: parseInt(quantity),
+            confirm_topup: confirmTopup
+        };
+
+        try {
+            const res = await fetch('/api/store/purchase', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+
+            if (res.ok && data.status === 'success') {
+                alert(data.message);
+                window.location.reload();
+            } else if (data.status === 'requires_topup') {
+                // Shortfall scenario handle prompt
+                const proceed = confirm(`${data.message}\n\nDo you want to proceed and allow cash top-up / negative balance for this customer?`);
+                if (proceed) {
+                    await processCustomerPurchase(null, true);
+                }
+            } else {
+                alert(data.message || "Failed to process purchase.");
+            }
+        } catch(err) {
+            console.error(err);
+            alert("Server connection error during purchase.");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fa-solid fa-check me-2"></i>Confirm & Deduct`;
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        populateCustomerDropdown();
+        populateProductDropdown();
+        renderJumiaShowcase();
+        renderInventoryTable();
+        renderPurchasesTable();
+    });
+</script>
+{% endblock %}

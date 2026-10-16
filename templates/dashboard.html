@@ -1,0 +1,860 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- 
+    GAKURI DAIRY - CENTRAL ACCOUNTANT MANAGEMENT DASHBOARD
+    Strict Server-Side & SQLite Integration (gakuri_dairy.db)
+-->
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.75);
+        --glass-bg-hover: rgba(255, 255, 255, 0.90);
+        --glass-border: rgba(255, 255, 255, 0.85);
+        --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08);
+        --primary-blue: #0284c7;
+        --primary-dark-blue: #1e3a8a;
+        --text-dark: #0f172a;
+        --text-muted: #64748b;
+    }
+
+    .dash-fullscreen-wrapper {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 99999;
+        background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 40%, #e2e8f0 100%);
+        overflow-y: auto;
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 11px;
+        color: var(--text-dark);
+        padding: 12px;
+        box-sizing: border-box;
+    }
+
+    .glass-panel {
+        background: var(--glass-bg);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--glass-shadow);
+        border-radius: 12px;
+        transition: all 0.25s ease-in-out;
+    }
+
+    .glass-panel:hover {
+        background: var(--glass-bg-hover);
+        box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.12);
+    }
+
+    .dash-header {
+        padding: 10px 16px;
+    }
+
+    .module-title-text {
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: -0.2px;
+        background: linear-gradient(135deg, #0284c7 0%, #1e3a8a 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-transform: uppercase;
+    }
+
+    .btn-xs {
+        padding: 5px 12px;
+        font-size: 11px;
+        font-weight: 700;
+        border-radius: 8px;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .btn-xs:active {
+        transform: scale(0.96);
+    }
+
+    .btn-glass-primary {
+        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+        color: #ffffff;
+        border: none;
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+    }
+
+    .btn-glass-primary:hover {
+        color: #ffffff;
+        box-shadow: 0 6px 16px rgba(2, 132, 199, 0.35);
+    }
+
+    .btn-glass-dark {
+        background: linear-gradient(135deg, #334155 0%, #0f172a 100%);
+        color: #ffffff;
+        border: none;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+    }
+
+    .form-control-xs, .form-select-xs {
+        height: 30px;
+        padding: 4px 10px;
+        font-size: 11px;
+        border-radius: 8px;
+        border: 1px solid rgba(2, 132, 199, 0.25);
+        background: rgba(255, 255, 255, 0.85);
+    }
+
+    .kpi-card {
+        padding: 10px 14px;
+        border-left: 4px solid #0d6efd;
+    }
+
+    .kpi-title {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        letter-spacing: 0.5px;
+    }
+
+    .kpi-value {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: var(--primary-blue);
+        line-height: 1.2;
+        margin: 4px 0;
+    }
+
+    .kpi-sub {
+        font-size: 10px;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    .dash-tabs {
+        border-bottom: 2px solid rgba(2, 132, 199, 0.1);
+        margin-top: 10px;
+        margin-bottom: 12px;
+        gap: 6px;
+    }
+
+    .dash-tabs .nav-link {
+        color: var(--text-muted);
+        font-weight: 700;
+        font-size: 11px;
+        padding: 8px 16px;
+        border-radius: 8px 8px 0 0;
+        border: 1px solid transparent;
+        background: rgba(255, 255, 255, 0.4);
+    }
+
+    .dash-tabs .nav-link.active {
+        color: var(--primary-blue);
+        background: #ffffff;
+        border: 1px solid rgba(2, 132, 199, 0.2);
+        border-bottom: 3px solid var(--primary-blue);
+    }
+
+    .dash-pane { display: none; }
+    .dash-pane.active { display: block; }
+
+    .chart-card {
+        padding: 12px;
+        height: 100%;
+    }
+
+    .chart-wrapper {
+        position: relative;
+        height: 210px;
+        width: 100%;
+    }
+
+    .content-box {
+        padding: 12px;
+        margin-top: 10px;
+    }
+
+    .box-title {
+        font-size: 11px;
+        font-weight: 800;
+        color: var(--primary-blue);
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid rgba(2, 132, 199, 0.15);
+        padding-bottom: 6px;
+    }
+
+    table.dash-table {
+        width: 100%;
+        margin-bottom: 0;
+        font-size: 11px;
+        border-collapse: separate;
+        border-spacing: 0;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    table.dash-table th {
+        background: linear-gradient(135deg, #1e3a8a 0%, #0284c7 100%);
+        color: #ffffff;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 10px;
+        padding: 8px 10px;
+        border: none;
+    }
+
+    table.dash-table td {
+        padding: 8px 10px;
+        vertical-align: middle;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+        background: rgba(255, 255, 255, 0.6);
+    }
+
+    .badge-gain { color: #15803d; background-color: #dcfce7; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 10px; }
+    .badge-loss { color: #b91c1c; background-color: #fee2e2; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 10px; }
+    .badge-zero { color: #334155; background-color: #f1f5f9; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 10px; }
+</style>
+
+<div class="dash-fullscreen-wrapper" id="dash_fullscreen_container">
+    
+    <!-- Top Header Navigation -->
+    <div class="dash-header glass-panel d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+        <div class="d-flex align-items-center gap-2">
+            <a href="/" class="btn btn-xs btn-glass-primary">
+                <i class="fa-solid fa-arrow-left me-1"></i> Main Menu
+            </a>
+            <button class="btn btn-xs btn-glass-dark" onclick="toggleFullScreenMode()">
+                <i class="fa-solid fa-expand me-1"></i> Fullscreen
+            </button>
+            <div class="border-start ps-2 ms-1 border-secondary">
+                <span class="module-title-text">ACCOUNTANT MANAGEMENT DASHBOARD</span>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="/accountant" class="text-secondary fw-bold text-decoration-none me-2">Accountant Intake</a>
+            <a href="/porters" class="text-secondary fw-bold text-decoration-none me-2">Porters Module</a>
+            <a href="/customers" class="text-secondary fw-bold text-decoration-none me-2">Customers Module</a>
+            <label class="fw-bold text-secondary mb-0 ms-2">Date:</label>
+            <input type="date" id="dash_date_filter" class="form-control form-control-xs" style="width: 135px;" onchange="renderAllDashboardPanels()">
+            <button class="btn btn-xs btn-glass-primary px-2" onclick="renderAllDashboardPanels()"><i class="fa-solid fa-rotate me-1"></i> Refresh</button>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs dash-tabs border-0">
+        <li class="nav-item">
+            <button class="nav-link active" onclick="switchDashTab(event, 'tab-overview')"><i class="fa-solid fa-chart-pie me-1"></i> Executive Overview</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" onclick="switchDashTab(event, 'tab-operations')"><i class="fa-solid fa-truck-ramp-box me-1"></i> Operations & Weighbridge</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" onclick="switchDashTab(event, 'tab-finance')"><i class="fa-solid fa-sack-dollar me-1"></i> Financial Payouts</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" onclick="switchDashTab(event, 'tab-audit-stream')"><i class="fa-solid fa-clock-rotate-left me-1"></i> Audit Activity Logs</button>
+        </li>
+    </ul>
+
+    <!-- TAB 1: EXECUTIVE OVERVIEW -->
+    <div id="tab-overview" class="dash-pane active">
+        <div class="row g-2 mb-2">
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="kpi-card glass-panel" style="border-left-color: #0d6efd;">
+                    <div class="kpi-title">Total Intake Today</div>
+                    <div class="kpi-value" id="kpi_today_vol">0.00 L</div>
+                    <div class="kpi-sub" id="kpi_session_split">M: 0.0L | A: 0.0L</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="kpi-card glass-panel" style="border-left-color: #16a34a;">
+                    <div class="kpi-title">Active Farmers</div>
+                    <div class="kpi-value" id="kpi_active_farmers" style="color: #16a34a;">0</div>
+                    <div class="kpi-sub" id="kpi_total_farmers">out of 0 registered</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="kpi-card glass-panel" style="border-left-color: #ca8a04;">
+                    <div class="kpi-title">Active Porters</div>
+                    <div class="kpi-value" id="kpi_active_porters" style="color: #ca8a04;">0</div>
+                    <div class="kpi-sub" id="kpi_total_porters">out of 0 registered</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="kpi-card glass-panel" style="border-left-color: #dc2626;">
+                    <div class="kpi-title">Net Scale Variance</div>
+                    <div class="kpi-value" id="kpi_net_variance" style="color: #dc2626;">0.00 L</div>
+                    <div class="kpi-sub" id="kpi_loss_status">Station vs Porter Sum</div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4 col-lg-3">
+                <div class="kpi-card glass-panel" style="border-left-color: #9333ea;">
+                    <div class="kpi-title">Est. Today's Payout</div>
+                    <div class="kpi-value" id="kpi_est_payout" style="color: #9333ea;">KES 0.00</div>
+                    <div class="kpi-sub">Rate: @ KES 50.00 / Litre</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-2 mb-2">
+            <div class="col-12 col-md-7">
+                <div class="chart-card glass-panel">
+                    <h6 class="fw-bold text-primary mb-1" style="font-size: 11px;"><i class="fa-solid fa-chart-bar me-1"></i> Intake Volume by Porter (Litres)</h6>
+                    <div class="chart-wrapper">
+                        <canvas id="dashPorterChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-5">
+                <div class="chart-card glass-panel">
+                    <h6 class="fw-bold text-primary mb-1" style="font-size: 11px;"><i class="fa-solid fa-chart-pie me-1"></i> Morning vs Afternoon Split</h6>
+                    <div class="chart-wrapper">
+                        <canvas id="dashSessionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-box glass-panel">
+            <div class="box-title"><i class="fa-solid fa-trophy me-1"></i> Top Delivering Farmers (Selected Date)</div>
+            <div class="table-responsive">
+                <table class="table dash-table">
+                    <thead>
+                        <tr>
+                            <th>Farmer ID</th>
+                            <th>Farmer Name</th>
+                            <th>Phone Contact</th>
+                            <th>Collection Point</th>
+                            <th>Morning (L)</th>
+                            <th>Afternoon (L)</th>
+                            <th>Total Day (L)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="top_farmers_body">
+                        <tr><td colspan="7" class="text-center text-muted">Loading farmer intake data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: OPERATIONS -->
+    <div id="tab-operations" class="dash-pane">
+        <div class="content-box glass-panel mt-0">
+            <div class="box-title"><i class="fa-solid fa-scale-balanced me-1"></i> Porter Station Weighbridge Reconciliation</div>
+            <div class="table-responsive">
+                <table class="table dash-table">
+                    <thead>
+                        <tr>
+                            <th>Collection Date</th>
+                            <th>Porter ID</th>
+                            <th>Porter Name</th>
+                            <th>Porter Sum (L)</th>
+                            <th>Station Weighed (L)</th>
+                            <th>Variance (L)</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ops_recon_body">
+                        <tr><td colspan="7" class="text-center text-muted">Loading operational data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="content-box glass-panel">
+            <div class="box-title text-danger"><i class="fa-solid fa-shield-halved me-1"></i> High Risk / Variance Detector</div>
+            <div class="table-responsive">
+                <table class="table dash-table">
+                    <thead>
+                        <tr>
+                            <th>Porter ID</th>
+                            <th>Porter Name</th>
+                            <th>Total Collections</th>
+                            <th>Loss Incidents</th>
+                            <th>Cumulative Loss (L)</th>
+                            <th>Threat Level</th>
+                            <th>Action Recommended</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ops_risk_body">
+                        <tr><td colspan="7" class="text-center text-muted">Analyzing risk factors...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: FINANCIALS -->
+    <div id="tab-finance" class="dash-pane">
+        <div class="content-box glass-panel mt-0 mb-2">
+            <div class="row g-2 align-items-center">
+                <div class="col-12 col-md-4">
+                    <label class="fw-bold text-dark">Payout Range:</label>
+                    <select id="fin_period_select" class="form-select form-select-xs" onchange="calculateFinancials()">
+                        <option value="today">Selected Date Only</option>
+                        <option value="month">Current Month</option>
+                        <option value="all">All Available History</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="fw-bold text-dark">Payout Rate Per Litre (KES):</label>
+                    <input type="number" id="fin_rate_input" value="50" class="form-control form-control-xs" oninput="calculateFinancials()">
+                </div>
+                <div class="col-12 col-md-4 text-md-end">
+                    <div class="fw-bold text-success" id="fin_grand_total" style="font-size: 14px;">Total Payout: KES 0.00</div>
+                    <small class="text-muted" id="fin_grand_vol">Total Volume: 0.00 L</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-box glass-panel">
+            <div class="box-title"><i class="fa-solid fa-file-invoice-dollar me-1"></i> Farmer Earnings & Payment Roster</div>
+            <div class="table-responsive">
+                <table class="table dash-table">
+                    <thead>
+                        <tr>
+                            <th>Farmer ID</th>
+                            <th>Farmer Name</th>
+                            <th>Phone Contact</th>
+                            <th>Assigned Porter</th>
+                            <th>Payment Method</th>
+                            <th>Volume Delivered (L)</th>
+                            <th>Gross Payout (KES)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fin_payout_body">
+                        <tr><td colspan="7" class="text-center text-muted">Calculating payouts...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 4: AUDIT STREAM -->
+    <div id="tab-audit-stream" class="dash-pane">
+        <div class="content-box glass-panel mt-0">
+            <div class="box-title"><i class="fa-solid fa-list-check me-1"></i> System Audit & Activity Log</div>
+            <div class="table-responsive">
+                <table class="table dash-table">
+                    <thead>
+                        <tr>
+                            <th>Log ID</th>
+                            <th>Timestamp</th>
+                            <th>Action Type</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="audit_stream_body">
+                        <tr><td colspan="4" class="text-center text-muted">Loading audit log...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Safe serialization after converting sqlite3.Row to dict in app.py
+    let dbPorters = {{ (porters if porters is defined else []) | tojson | safe }};
+    let dbCustomers = {{ (customers if customers is defined else []) | tojson | safe }};
+    let dbIntakes = {{ (intakes if intakes is defined else []) | tojson | safe }};
+    let dbAudits = {{ (audits if audits is defined else []) | tojson | safe }};
+
+    let chartPorterObj = null;
+    let chartSessionObj = null;
+
+    function parsePorterId(p) { return String(p.porter_id || p.id || p.code || '').trim(); }
+    function parsePorterName(p) { return p.name || p.full_name || p.porter_name || 'Porter #' + parsePorterId(p); }
+    function parseCustId(c) { return String(c.id || c.cust_id || c.farmer_id || c.code || '').trim(); }
+    function parseCustName(c) { return c.full_name || c.name || c.farmer_name || c.customer_name || 'Farmer #' + parseCustId(c); }
+
+    function parseIntakeDate(i) {
+        let raw = String(i.collection_date || i.date || i.created_at || '').trim();
+        if(!raw) return '';
+        if(raw.includes('T')) raw = raw.split('T')[0];
+        if(raw.includes(' ')) raw = raw.split(' ')[0];
+        return raw;
+    }
+
+    function parseMorningVol(i) {
+        return parseFloat(i.morning_vol || i.morning || 0) || 0;
+    }
+
+    function parseAfternoonVol(i) {
+        return parseFloat(i.afternoon_vol || i.afternoon || 0) || 0;
+    }
+
+    function parseTotalVol(i) {
+        const m = parseMorningVol(i);
+        const a = parseAfternoonVol(i);
+        if (m > 0 || a > 0) return m + a;
+        return parseFloat(i.total_vol || i.litres || i.quantity || i.amount || 0) || 0;
+    }
+
+    function toggleFullScreenMode() {
+        const elem = document.getElementById("dash_fullscreen_container");
+        if (!document.fullscreenElement) {
+            if (elem.requestFullscreen) elem.requestFullscreen();
+            else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+        } else {
+            if (document.exitFullscreen) document.exitFullscreen();
+        }
+    }
+
+    function switchDashTab(evt, tabId) {
+        if(evt) evt.preventDefault();
+        document.querySelectorAll('.dash-tabs .nav-link').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.dash-pane').forEach(p => p.classList.remove('active'));
+        if (evt && evt.currentTarget) evt.currentTarget.classList.add('active');
+        const pane = document.getElementById(tabId);
+        if (pane) pane.classList.add('active');
+    }
+
+    async function initDashboardData() {
+        document.getElementById('dash_date_filter').value = new Date().toISOString().split('T')[0];
+
+        // Fall back to API endpoints if context lists are empty
+        if (!dbPorters.length || !dbCustomers.length || !dbIntakes.length) {
+            try {
+                const [pRes, cRes, iRes, aRes] = await Promise.all([
+                    fetch('/api/porters').catch(() => ({ ok: false })),
+                    fetch('/api/customers').catch(() => ({ ok: false })),
+                    fetch('/api/intakes').catch(() => ({ ok: false })),
+                    fetch('/api/audits').catch(() => ({ ok: false }))
+                ]);
+
+                if (pRes.ok) dbPorters = await pRes.json();
+                if (cRes.ok) dbCustomers = await cRes.json();
+                if (iRes.ok) dbIntakes = await iRes.json();
+                if (aRes.ok) dbAudits = await aRes.json();
+            } catch (err) {
+                console.warn("API endpoints not reachable, proceeding with local context.");
+            }
+        }
+
+        renderAllDashboardPanels();
+    }
+
+    function renderAllDashboardPanels() {
+        renderOverviewKPIs();
+        renderOperationsTab();
+        calculateFinancials();
+        renderAuditStream();
+    }
+
+    function renderOverviewKPIs() {
+        const selectedDate = document.getElementById('dash_date_filter').value;
+        const dateIntakes = dbIntakes.filter(i => parseIntakeDate(i) === selectedDate || !selectedDate);
+
+        let mVol = 0, aVol = 0;
+        dateIntakes.forEach(i => {
+            const m = parseMorningVol(i);
+            const a = parseAfternoonVol(i);
+            if(m === 0 && a === 0) {
+                mVol += parseTotalVol(i);
+            } else {
+                mVol += m;
+                aVol += a;
+            }
+        });
+
+        const totalVol = mVol + aVol;
+        document.getElementById('kpi_today_vol').innerText = totalVol.toFixed(2) + " L";
+        document.getElementById('kpi_session_split').innerText = `M: ${mVol.toFixed(1)}L | A: ${aVol.toFixed(1)}L`;
+
+        const activeFarmerIds = new Set(dateIntakes.map(i => String(i.customer_id || i.cust_id || i.farmer_id || '')).filter(Boolean));
+        document.getElementById('kpi_active_farmers').innerText = activeFarmerIds.size;
+        document.getElementById('kpi_total_farmers').innerText = `out of ${dbCustomers.length} registered`;
+
+        const activePorterIds = new Set(dateIntakes.map(i => String(i.porter_id || '')).filter(Boolean));
+        document.getElementById('kpi_active_porters').innerText = activePorterIds.size;
+        document.getElementById('kpi_total_porters').innerText = `out of ${dbPorters.length} registered`;
+
+        const stationGroup = {};
+        dateIntakes.forEach(i => {
+            const pKey = String(i.porter_id || 'Unassigned');
+            if(!stationGroup[pKey]) stationGroup[pKey] = { porterSum: 0, stationWeighed: parseFloat(i.station_weighed || 0) || 0 };
+            stationGroup[pKey].porterSum += parseTotalVol(i);
+        });
+
+        let netVariance = 0;
+        Object.values(stationGroup).forEach(g => {
+            if(g.stationWeighed > 0) {
+                netVariance += (g.porterSum - g.stationWeighed);
+            }
+        });
+
+        const varElem = document.getElementById('kpi_net_variance');
+        if (netVariance > 0) {
+            varElem.innerText = "+" + netVariance.toFixed(2) + " L (GAIN)";
+            varElem.style.color = "#16a34a";
+        } else if (netVariance < 0) {
+            varElem.innerText = netVariance.toFixed(2) + " L (LOSS)";
+            varElem.style.color = "#dc2626";
+        } else {
+            varElem.innerText = "0.00 L (Balanced)";
+            varElem.style.color = "#0284c7";
+        }
+
+        document.getElementById('kpi_est_payout').innerText = "KES " + (totalVol * 50).toLocaleString('en-KE', {minimumFractionDigits: 2});
+
+        renderOverviewCharts(dateIntakes, mVol, aVol);
+
+        const farmerTotals = {};
+        dateIntakes.forEach(i => {
+            const cId = String(i.customer_id || i.cust_id || i.farmer_id || '');
+            if(!cId) return;
+            if(!farmerTotals[cId]) {
+                const cObj = dbCustomers.find(c => parseCustId(c) === cId);
+                farmerTotals[cId] = {
+                    id: cId,
+                    name: cObj ? parseCustName(cObj) : (i.customer_name || 'Farmer #' + cId),
+                    phone: cObj ? (cObj.phone || '-') : '-',
+                    point: cObj ? (cObj.collection_point || '-') : '-',
+                    mVol: 0,
+                    aVol: 0,
+                    tVol: 0
+                };
+            }
+            farmerTotals[cId].mVol += parseMorningVol(i);
+            farmerTotals[cId].aVol += parseAfternoonVol(i);
+            farmerTotals[cId].tVol += parseTotalVol(i);
+        });
+
+        const sortedFarmers = Object.values(farmerTotals).sort((a,b) => b.tVol - a.tVol);
+        const tbody = document.getElementById('top_farmers_body');
+        tbody.innerHTML = "";
+
+        if(sortedFarmers.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No milk intake recorded for the selected date.</td></tr>';
+        } else {
+            sortedFarmers.slice(0, 10).forEach(f => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><b>${f.id}</b></td>
+                        <td>${f.name}</td>
+                        <td>${f.phone}</td>
+                        <td>${f.point}</td>
+                        <td>${f.mVol.toFixed(1)} L</td>
+                        <td>${f.aVol.toFixed(1)} L</td>
+                        <td class="fw-bold text-primary">${f.tVol.toFixed(1)} L</td>
+                    </tr>
+                `;
+            });
+        }
+    }
+
+    function renderOverviewCharts(dateIntakes, mVol, aVol) {
+        const ctx1 = document.getElementById('dashSessionChart').getContext('2d');
+        if(chartSessionObj) chartSessionObj.destroy();
+        chartSessionObj = new Chart(ctx1, {
+            type: 'doughnut',
+            data: {
+                labels: ['Morning', 'Afternoon'],
+                datasets: [{
+                    data: [mVol, aVol],
+                    backgroundColor: ['#0284c7', '#f59e0b']
+                }]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } 
+            }
+        });
+
+        const porterVols = {};
+        dbPorters.forEach(p => porterVols[parsePorterName(p)] = 0);
+        dateIntakes.forEach(i => {
+            const pId = String(i.porter_id || '');
+            const pObj = dbPorters.find(p => parsePorterId(p) === pId);
+            const pName = pObj ? parsePorterName(pObj) : (pId || 'Unassigned');
+            porterVols[pName] = (porterVols[pName] || 0) + parseTotalVol(i);
+        });
+
+        const ctx2 = document.getElementById('dashPorterChart').getContext('2d');
+        if(chartPorterObj) chartPorterObj.destroy();
+        chartPorterObj = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(porterVols),
+                datasets: [{
+                    label: 'Litres',
+                    data: Object.values(porterVols),
+                    backgroundColor: '#0284c7',
+                    borderRadius: 6
+                }]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { display: false } }, 
+                scales: { 
+                    x: { ticks: { font: { size: 9 } } }, 
+                    y: { ticks: { font: { size: 9 } }, beginAtZero: true } 
+                } 
+            }
+        });
+    }
+
+    function renderOperationsTab() {
+        const grouped = {};
+        dbIntakes.forEach(i => {
+            const pId = String(i.porter_id || '');
+            const d = parseIntakeDate(i);
+            const key = `${d}_${pId}`;
+            if(!grouped[key]) {
+                grouped[key] = {
+                    date: d,
+                    porter_id: pId,
+                    station_reading: parseFloat(i.station_weighed || 0) || 0,
+                    porter_sum: 0
+                };
+            }
+            grouped[key].porter_sum += parseTotalVol(i);
+        });
+
+        const reconBody = document.getElementById('ops_recon_body');
+        reconBody.innerHTML = "";
+
+        const entries = Object.values(grouped).reverse();
+        if(entries.length === 0) {
+            reconBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No operational records found.</td></tr>';
+        } else {
+            entries.forEach(l => {
+                const variance = l.porter_sum - l.station_reading;
+                const status = variance > 0 ? 'GAIN' : (variance < 0 ? 'LOSS' : 'BALANCED');
+                const pObj = dbPorters.find(p => parsePorterId(p) === l.porter_id);
+                const badgeClass = variance > 0 ? 'badge-gain' : (variance < 0 ? 'badge-loss' : 'badge-zero');
+
+                reconBody.innerHTML += `
+                    <tr>
+                        <td>${l.date || '-'}</td>
+                        <td><b>${l.porter_id || '-'}</b></td>
+                        <td>${pObj ? parsePorterName(pObj) : l.porter_id}</td>
+                        <td>${l.porter_sum.toFixed(2)} L</td>
+                        <td>${l.station_reading.toFixed(2)} L</td>
+                        <td class="fw-bold">${variance > 0 ? '+' : ''}${variance.toFixed(2)} L</td>
+                        <td><span class="${badgeClass}">${status}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        const riskBody = document.getElementById('ops_risk_body');
+        riskBody.innerHTML = "";
+
+        dbPorters.forEach(p => {
+            const pId = parsePorterId(p);
+            const pIntakes = entries.filter(i => i.porter_id === pId);
+            const lossIncidents = pIntakes.filter(i => (i.porter_sum - i.station_reading) < 0 && i.station_reading > 0);
+            const totalLoss = lossIncidents.reduce((acc, curr) => acc + Math.abs(curr.porter_sum - curr.station_reading), 0);
+
+            let threatLevel = "Low";
+            let recommendation = "Standard monitoring";
+            let color = "#16a34a";
+
+            if (lossIncidents.length >= 3 || totalLoss > 10) {
+                threatLevel = "HIGH RISK";
+                recommendation = "Recalibrate scale / Route audit";
+                color = "#dc2626";
+            } else if (lossIncidents.length > 0) {
+                threatLevel = "Moderate";
+                recommendation = "Keep under observation";
+                color = "#ca8a04";
+            }
+
+            riskBody.innerHTML += `
+                <tr>
+                    <td><b>${pId}</b></td>
+                    <td>${parsePorterName(p)}</td>
+                    <td>${pIntakes.length}</td>
+                    <td>${lossIncidents.length}</td>
+                    <td class="text-danger fw-bold">${totalLoss.toFixed(2)} L</td>
+                    <td class="fw-bold" style="color:${color}">${threatLevel}</td>
+                    <td>${recommendation}</td>
+                </tr>
+            `;
+        });
+    }
+
+    function calculateFinancials() {
+        const period = document.getElementById('fin_period_select').value;
+        const rate = parseFloat(document.getElementById('fin_rate_input').value) || 0;
+        const selectedDate = document.getElementById('dash_date_filter').value;
+
+        let filtered = [...dbIntakes];
+        if (period === 'today') {
+            filtered = filtered.filter(i => parseIntakeDate(i) === selectedDate);
+        } else if (period === 'month') {
+            const curMonth = selectedDate.substring(0, 7);
+            filtered = filtered.filter(i => parseIntakeDate(i).startsWith(curMonth));
+        }
+
+        const finBody = document.getElementById('fin_payout_body');
+        finBody.innerHTML = "";
+
+        let grandVol = 0;
+
+        dbCustomers.forEach(c => {
+            const cId = parseCustId(c);
+            let totalVol = 0;
+            filtered.forEach(i => {
+                if (String(i.customer_id || i.cust_id || i.farmer_id || '') === cId) {
+                    totalVol += parseTotalVol(i);
+                }
+            });
+
+            grandVol += totalVol;
+            const grossPayout = totalVol * rate;
+            const pObj = dbPorters.find(p => parsePorterId(p) === String(c.assigned_porter_id || c.porter_id || ''));
+
+            finBody.innerHTML += `
+                <tr>
+                    <td><b>${cId}</b></td>
+                    <td>${parseCustName(c)}</td>
+                    <td>${c.phone || '-'}</td>
+                    <td>${pObj ? parsePorterName(pObj) : 'Unassigned'}</td>
+                    <td><span class="badge bg-light text-dark border">${c.payment_method || 'MPESA'}</span></td>
+                    <td class="fw-bold">${totalVol.toFixed(2)} L</td>
+                    <td class="fw-bold text-primary">KES ${grossPayout.toLocaleString('en-KE', {minimumFractionDigits: 2})}</td>
+                </tr>
+            `;
+        });
+
+        document.getElementById('fin_grand_vol').innerText = "Total Volume: " + grandVol.toFixed(2) + " L";
+        document.getElementById('fin_grand_total').innerText = "Total Payout: KES " + (grandVol * rate).toLocaleString('en-KE', {minimumFractionDigits: 2});
+    }
+
+    function renderAuditStream() {
+        const tbody = document.getElementById('audit_stream_body');
+        tbody.innerHTML = "";
+
+        if(dbAudits.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No audit logs recorded.</td></tr>';
+            return;
+        }
+
+        dbAudits.slice().reverse().forEach(a => {
+            tbody.innerHTML += `
+                <tr>
+                    <td><b>#${a.id}</b></td>
+                    <td>${a.created_at || a.timestamp || '-'}</td>
+                    <td><span class="badge bg-primary">${a.action || 'LOG'}</span></td>
+                    <td>${a.details || '-'}</td>
+                </tr>
+            `;
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", initDashboardData);
+</script>
+{% endblock %}

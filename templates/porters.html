@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Porter Management Module - GAKURI DAIRY SYSTEM</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-body: #f1f5f9;
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
+            --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            --primary-blue: #0066ff;
+            --primary-hover: #0052cc;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 8px;
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        @media (min-width: 768px) {
+            body { padding: 12px; }
+        }
+
+        .module-fullscreen-wrapper {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .glass-card-hover:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 12px rgba(0, 102, 255, 0.08);
+        }
+
+        .brand-title-3d {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            color: var(--primary-blue);
+            text-transform: uppercase;
+        }
+
+        .icon-3d {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: #eff6ff;
+            color: var(--primary-blue);
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .top-navbar {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            box-shadow: var(--card-shadow);
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin-bottom: 10px;
+        }
+
+        .nav-header-btn {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            color: #1e293b;
+            font-weight: 600;
+            transition: background 0.2s ease, color 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            font-size: 0.82rem;
+            white-space: nowrap;
+        }
+        .nav-header-btn:hover {
+            background: #eff6ff;
+            color: var(--primary-blue);
+        }
+
+        .glass-tab-bar {
+            display: flex;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            gap: 6px;
+            padding: 6px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            scrollbar-width: none;
+        }
+        .glass-tab-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-btn-custom {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            font-size: 0.82rem;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .tab-btn-custom:hover {
+            background: #f1f5f9;
+            color: var(--primary-blue);
+        }
+
+        .tab-btn-custom.active {
+            background: var(--primary-blue);
+            color: #ffffff;
+            border-color: var(--primary-blue);
+        }
+        .tab-btn-custom.active .icon-3d {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+
+        .module-workspace {
+            flex: 1;
+            padding: 14px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 0.82rem;
+            color: #334155;
+            margin-bottom: 4px;
+        }
+
+        .form-control, .form-select {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 9px 12px;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: #ffffff;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.12);
+        }
+
+        .group-box-glass {
+            background: #f8fafc;
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 14px;
+            margin-top: 14px;
+            position: relative;
+        }
+
+        .group-box-title {
+            position: absolute;
+            top: -10px;
+            left: 12px;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 1px 8px;
+            font-weight: 700;
+            color: var(--primary-blue);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table-responsive {
+            -webkit-overflow-scrolling: touch;
+            border-radius: 8px;
+        }
+
+        .table {
+            color: var(--text-dark);
+            margin-bottom: 0;
+            font-size: 0.83rem;
+            white-space: nowrap;
+        }
+
+        .table thead th {
+            background: #0f172a;
+            color: #ffffff;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.72rem;
+            letter-spacing: 0.5px;
+            border: none;
+            padding: 10px 12px;
+        }
+
+        .table tbody td {
+            background: #ffffff;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+            padding: 9px 12px;
+        }
+
+        .table-hover tbody tr:hover td {
+            background: #f8fafc;
+        }
+
+        .progress-bar-custom {
+            background-color: #e2e8f0;
+            border-radius: 6px;
+            overflow: hidden;
+            height: 18px;
+            position: relative;
+        }
+        .progress-fill-custom {
+            background: #10b981;
+            height: 100%;
+            width: 100%;
+        }
+        .progress-text-custom {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            text-align: center;
+            color: #ffffff;
+            font-weight: 700;
+            line-height: 18px;
+            font-size: 0.7rem;
+        }
+
+        .status-bar-glass {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 8px 14px;
+            margin-top: 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            box-shadow: var(--card-shadow);
+        }
+
+        .scroll-control-btn {
+            position: fixed;
+            right: 14px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            color: var(--primary-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            cursor: pointer;
+            z-index: 1050;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+        .scroll-control-btn:hover {
+            background: var(--primary-blue);
+            color: #ffffff;
+        }
+        #btn-scroll-top { bottom: 58px; }
+        #btn-scroll-bottom { bottom: 14px; }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="module-fullscreen-wrapper" id="porter_fullscreen_container">
+
+    <!-- TOP NAVIGATION BAR -->
+    <nav class="top-navbar d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <a href="/" class="nav-header-btn">
+                <i class="fa-solid fa-arrow-left text-primary"></i> Main Menu
+            </a>
+            <button class="nav-header-btn" onclick="toggleFullScreenMode()">
+                <i class="fa-solid fa-expand text-primary"></i> Fullscreen
+            </button>
+            <span class="brand-title-3d ms-1">GAKURI DAIRY - PORTERS MODULE</span>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <a href="/porters" class="nav-header-btn" style="background: #eff6ff; color: var(--primary-blue); border-color: #bfdbfe;">
+                <span class="icon-3d" style="width:24px; height:24px; font-size:0.75rem;"><i class="fa-solid fa-truck-ramp-box"></i></span> Porters Module
+            </a>
+            <a href="/customers" class="nav-header-btn">
+                <span class="icon-3d" style="width:24px; height:24px; font-size:0.75rem;"><i class="fa-solid fa-users-gear"></i></span> Customers Module
+            </a>
+            <a href="/accountant" class="nav-header-btn">
+                <span class="icon-3d" style="width:24px; height:24px; font-size:0.75rem;"><i class="fa-solid fa-calculator"></i></span> Accountant Module
+            </a>
+            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill font-monospace" style="font-size: 0.72rem;">
+                <i class="fa-solid fa-database me-1"></i> SQLite: gakuri_dairy.db
+            </span>
+        </div>
+    </nav>
+
+    <!-- GLASS TAB NAVIGATION BAR -->
+    <div class="glass-tab-bar">
+        <button class="tab-btn-custom active" onclick="switchTab(event, 'tab-dashboard')">
+            <span class="icon-3d" style="width:22px; height:22px; font-size:0.68rem;"><i class="fa-solid fa-chart-pie"></i></span> Dashboard
+        </button>
+        <button class="tab-btn-custom" onclick="switchTab(event, 'tab-register')">
+            <span class="icon-3d" style="width:22px; height:22px; font-size:0.68rem;"><i class="fa-solid fa-user-plus"></i></span> Register Porter
+        </button>
+        <button class="tab-btn-custom" onclick="switchTab(event, 'tab-edit')">
+            <span class="icon-3d" style="width:22px; height:22px; font-size:0.68rem;"><i class="fa-solid fa-user-pen"></i></span> Edit Details
+        </button>
+        <button class="tab-btn-custom" onclick="switchTab(event, 'tab-directory')">
+            <span class="icon-3d" style="width:22px; height:22px; font-size:0.68rem;"><i class="fa-solid fa-address-book"></i></span> Porter Directory
+        </button>
+        <button class="tab-btn-custom" onclick="switchTab(event, 'tab-assignments')">
+            <span class="icon-3d" style="width:22px; height:22px; font-size:0.68rem;"><i class="fa-solid fa-users-link"></i></span> Assigned Customers
+        </button>
+        <button class="tab-btn-custom" onclick="switchTab(event, 'tab-payments')">
+            <span class="icon-3d" style="width:22px; height:22px; font-size:0.68rem;"><i class="fa-solid fa-money-check-dollar"></i></span> Payment Setup & Sync
+        </button>
+        <button class="tab-btn-custom" onclick="switchTab(event, 'tab-ledger')">
+            <span class="icon-3d" style="width:22px; height:22px; font-size:0.68rem;"><i class="fa-solid fa-book"></i></span> Porters Ledger
+        </button>
+        <button class="tab-btn-custom" onclick="switchTab(event, 'tab-history')">
+            <span class="icon-3d" style="width:22px; height:22px; font-size:0.68rem;"><i class="fa-solid fa-clock-rotate-left"></i></span> Audit History
+        </button>
+    </div>
+
+    <!-- MAIN MODULE WORKSPACE -->
+    <div class="glass-card module-workspace">
+
+        <!-- 1. DASHBOARD TAB -->
+        <div id="tab-dashboard" class="tab-pane active">
+            <div class="row g-2 mb-3">
+                <div class="col-12 col-sm-4">
+                    <div class="glass-card glass-card-hover p-3 border-start border-4 border-primary">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <span class="text-uppercase text-muted fw-bold" style="font-size:0.7rem;">Total Registered Porters</span>
+                                <h3 class="fw-bold text-dark mt-1 mb-0" id="lbl_total_porters">0</h3>
+                            </div>
+                            <span class="icon-3d"><i class="fa-solid fa-truck-ramp-box"></i></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-4">
+                    <div class="glass-card glass-card-hover p-3 border-start border-4 border-success">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <span class="text-uppercase text-muted fw-bold" style="font-size:0.7rem;">Active Porters</span>
+                                <h3 class="fw-bold text-dark mt-1 mb-0" id="lbl_active_porters">0</h3>
+                            </div>
+                            <span class="icon-3d text-success"><i class="fa-solid fa-user-check"></i></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-4">
+                    <div class="glass-card glass-card-hover p-3 border-start border-4 border-warning">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <span class="text-uppercase text-muted fw-bold" style="font-size:0.7rem;">Top Route Coverage</span>
+                                <h3 class="fw-bold text-dark mt-1 mb-0" id="lbl_top_route" style="font-size: 1.2rem;">None</h3>
+                            </div>
+                            <span class="icon-3d text-warning"><i class="fa-solid fa-route"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-12 col-lg-7">
+                    <div class="group-box-glass mt-0">
+                        <span class="group-box-title">Recently Registered Porters</span>
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="recent_table">
+                                <thead>
+                                    <tr><th>ID</th><th>Name</th><th>Route Area</th></tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-5">
+                    <div class="group-box-glass mt-0 h-100">
+                        <span class="group-box-title">Collection & Route Breakdowns</span>
+                        <div class="d-flex flex-column gap-2 py-1">
+                            <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
+                                <span class="text-muted small">Primary Payment Mode:</span>
+                                <span id="lbl_pay_mode" class="fw-bold text-primary">MPESA</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
+                                <span class="text-muted small">Active Routes Coverage:</span>
+                                <span id="lbl_route_cnt" class="fw-bold text-dark">0</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted small">Avg Performance Index:</span>
+                                <span class="badge bg-success-subtle text-success font-monospace" style="font-size: 0.8rem;">100.0% (Ready)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary rounded-pill px-4 fw-semibold shadow-sm mt-1 w-100 w-md-auto" onclick="loadDashboardMetrics()">
+                <i class="fa-solid fa-rotate me-1"></i> Refresh Dashboard Metrics
+            </button>
+        </div>
+
+        <!-- 2. REGISTER PORTER TAB -->
+        <div id="tab-register" class="tab-pane">
+            <form id="registerForm" onsubmit="savePorter(event)">
+                <div class="group-box-glass">
+                    <span class="group-box-title">Porter Work Details</span>
+                    <div class="row g-2">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Porter ID (Primary Key) *</label>
+                            <input type="text" class="form-control" id="reg_id" placeholder="Auto-generated if empty (e.g. P001)">
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Full Names *</label>
+                            <input type="text" class="form-control" id="reg_name" required>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Primary Phone *</label>
+                            <input type="text" class="form-control" id="reg_phone" placeholder="07XXXXXXXX" required>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Assigned Route Area</label>
+                            <input type="text" class="form-control" id="reg_route" placeholder="e.g. KARIENE">
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" id="reg_status">
+                                <option>Active</option>
+                                <option>Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group-box-glass">
+                    <span class="group-box-title">Financial / Payment Preferences</span>
+                    <div class="row g-2">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Preferred Method</label>
+                            <select class="form-select" id="reg_pay_method" onchange="adjustPayFields(this.value)">
+                                <option value="MPESA">MPESA</option>
+                                <option value="Bank">Bank</option>
+                                <option value="SACCO">SACCO</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6" id="f_mpesa">
+                            <label class="form-label">MPESA Target Phone</label>
+                            <input type="text" class="form-control" id="reg_mpesa_phone" placeholder="07XXXXXXXX">
+                        </div>
+                        <div class="col-12 col-md-6" id="f_acc_name" style="display:none;">
+                            <label class="form-label">Account Name</label>
+                            <input type="text" class="form-control" id="reg_acc_name">
+                        </div>
+                        <div class="col-12 col-md-6" id="f_acc_num" style="display:none;">
+                            <label class="form-label">Account Number</label>
+                            <input type="text" class="form-control" id="reg_acc_num">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold flex-grow-1 flex-md-grow-0">
+                        <i class="fa-solid fa-floppy-disk me-1"></i> Register Porter
+                    </button>
+                    <button type="button" class="btn btn-secondary rounded-pill px-4 fw-semibold flex-grow-1 flex-md-grow-0" onclick="document.getElementById('registerForm').reset()">
+                        <i class="fa-solid fa-eraser me-1"></i> Clear Fields
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 3. EDIT DETAILS TAB -->
+        <div id="tab-edit" class="tab-pane">
+            <div class="group-box-glass mt-0 mb-3">
+                <span class="group-box-title">Search and Select Porter</span>
+                <input type="text" class="form-control" id="edit_search" placeholder="Search by ID, Name, Route..." oninput="liveEditSearch()">
+            </div>
+            
+            <div class="row g-3">
+                <div class="col-12 col-lg-5">
+                    <div class="table-responsive border" style="max-height: 300px; overflow-y: auto;">
+                        <table class="table table-hover align-middle" id="edit_list_table">
+                            <thead><tr><th>ID</th><th>Name</th><th>Route Area</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-7">
+                    <div class="group-box-glass mt-0">
+                        <span class="group-box-title">Editable Details</span>
+                        <div class="row g-2">
+                            <div class="col-12 col-md-6">
+                                <label class="form-label">Porter ID</label>
+                                <input type="text" class="form-control bg-light" id="e_id" readonly placeholder="Click a porter from list...">
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label">Full Names *</label>
+                                <input type="text" class="form-control" id="e_name">
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label">Phone Contact *</label>
+                                <input type="text" class="form-control" id="e_phone">
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label">Route Area</label>
+                                <input type="text" class="form-control" id="e_route">
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label">Status</label>
+                                <select class="form-select" id="e_status">
+                                    <option>Active</option>
+                                    <option>Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 mt-3 flex-wrap">
+                            <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold flex-grow-1 flex-md-grow-0" onclick="updatePorter()">
+                                <i class="fa-solid fa-user-check me-1"></i> Save Edited Details
+                            </button>
+                            <button type="button" class="btn btn-danger rounded-pill px-4 fw-bold flex-grow-1 flex-md-grow-0" onclick="deletePorter()">
+                                <i class="fa-solid fa-trash me-1"></i> Delete Porter Profile
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. PORTER DIRECTORY TAB -->
+        <div id="tab-directory" class="tab-pane">
+            <div class="row g-2 mb-3">
+                <div class="col-12 col-md-8">
+                    <input type="text" class="form-control" id="dir_search" placeholder="Filter by Name, Phone or Route..." oninput="loadDirectoryData()">
+                </div>
+                <div class="col-12 col-md-4">
+                    <select class="form-select" id="dir_status_filter" onchange="loadDirectoryData()">
+                        <option>All Statuses</option>
+                        <option>Active</option>
+                        <option>Inactive</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-responsive border">
+                <table class="table table-hover" id="dir_table">
+                    <thead>
+                        <tr><th>ID</th><th>Name</th><th>Phone Contact</th><th>Route Covered</th><th>Status</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 5. ASSIGNED CUSTOMERS TAB -->
+        <div id="tab-assignments" class="tab-pane">
+            <div class="alert glass-card border-start border-4 border-info d-flex align-items-center gap-2 py-2 px-3 mb-3">
+                <span class="icon-3d text-info" style="width:30px; height:30px; font-size:0.8rem;"><i class="fa-solid fa-circle-info"></i></span>
+                <span class="small"><b>Live Customer Cross-Link:</b> Fetches assigned customer rosters directly from the Customer Store.</span>
+            </div>
+            
+            <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+                <label class="fw-bold small text-dark mb-0">Select Porter:</label>
+                <select class="form-select w-auto flex-grow-1 flex-md-grow-0" id="assign_porter_combo" onchange="loadAssignedCustomers()"></select>
+            </div>
+
+            <div class="table-responsive border">
+                <table class="table table-hover" id="assigned_table">
+                    <thead><tr><th>Cust ID</th><th>Customer Name</th><th>Phone</th><th>Collection Point</th><th>Status</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 6. PAYMENT SETUP & SYNC -->
+        <div id="tab-payments" class="tab-pane">
+            <div class="alert glass-card border-start border-4 border-primary d-flex align-items-center gap-2 py-2 px-3 mb-3">
+                <span class="icon-3d text-primary" style="width:30px; height:30px; font-size:0.8rem;"><i class="fa-solid fa-sync"></i></span>
+                <span class="small"><b>Central Accounting Sync:</b> Pushes payment settings directly to central accountant registers.</span>
+            </div>
+            <div class="table-responsive border">
+                <table class="table table-hover" id="pay_table">
+                    <thead><tr><th>Porter ID</th><th>Name</th><th>Method</th><th>MPESA Phone</th><th>Account Number</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 7. PORTERS LEDGER -->
+        <div id="tab-ledger" class="tab-pane">
+            <div class="table-responsive border">
+                <table class="table table-hover" id="ledger_table">
+                    <thead><tr><th>ID</th><th>Name</th><th>Roster Count</th><th>Daily Litres</th><th>Monthly Litres</th><th>Performance</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 8. AUDIT HISTORY TAB -->
+        <div id="tab-history" class="tab-pane">
+            <div class="table-responsive border">
+                <table class="table table-hover" id="audit_table">
+                    <thead><tr><th>ID</th><th>Porter ID</th><th>Action</th><th>Field Changed</th><th>Old Value</th><th>New Value</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SYSTEM STATUS BAR -->
+    <div class="status-bar-glass d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div>User: <b>Admin</b></div>
+        <div id="db_status">DB Connection: <b class="text-success">Connected (gakuri_dairy.db)</b></div>
+        <div id="status_date">Date: --</div>
+        <div id="status_selection">Selected Porter: <b>None</b></div>
+        <div id="status_records">Porters Registered: <b>0</b></div>
+    </div>
+
+</div>
+
+<!-- SCROLL CONTROL BUTTONS -->
+<div class="scroll-control-btn" id="btn-scroll-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Scroll to Top">
+    <i class="fa-solid fa-arrow-up"></i>
+</div>
+<div class="scroll-control-btn" id="btn-scroll-bottom" onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})" title="Scroll to Bottom">
+    <i class="fa-solid fa-arrow-down"></i>
+</div>
+
+<!-- Bootstrap 5 Bundle JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    window.selectedPorter = null;
+
+    document.getElementById('status_date').innerText = "Date: " + new Date().toISOString().split('T')[0];
+
+    function toggleFullScreenMode() {
+        const elem = document.getElementById("porter_fullscreen_container");
+        if (!document.fullscreenElement) {
+            if (elem.requestFullscreen) elem.requestFullscreen();
+            else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+            else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
+        } else {
+            if (document.exitFullscreen) document.exitFullscreen();
+        }
+    }
+
+    function switchTab(evt, tabId) {
+        document.querySelectorAll('.tab-btn-custom').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        evt.currentTarget.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+        refreshAllViews();
+    }
+
+    function adjustPayFields(val) {
+        document.getElementById('f_mpesa').style.display = (val === 'MPESA') ? 'block' : 'none';
+        document.getElementById('f_acc_name').style.display = (val !== 'MPESA') ? 'block' : 'none';
+        document.getElementById('f_acc_num').style.display = (val !== 'MPESA') ? 'block' : 'none';
+    }
+
+    async function getNextPorterId() {
+        try {
+            const res = await fetch('/api/porters');
+            const items = await res.json();
+            if (!items || items.length === 0) return "P001";
+            let maxNum = 0;
+            items.forEach(item => {
+                const pid = item.porter_id || item.id;
+                if (pid && String(pid).startsWith("P")) {
+                    const num = parseInt(String(pid).replace("P", ""), 10);
+                    if (!isNaN(num) && num > maxNum) maxNum = num;
+                }
+            });
+            return `P${String(maxNum + 1).padStart(3, '0')}`;
+        } catch(e) {
+            return "P001";
+        }
+    }
+
+    async function savePorter(e) {
+        e.preventDefault();
+        let pid = document.getElementById('reg_id').value.trim().toUpperCase();
+        if(!pid) pid = await getNextPorterId();
+
+        const nameVal = document.getElementById('reg_name').value.trim();
+        const phoneVal = document.getElementById('reg_phone').value.trim();
+        const routeVal = document.getElementById('reg_route').value.trim();
+        const statusVal = document.getElementById('reg_status').value;
+
+        try {
+            const checkRes = await fetch('/api/porters');
+            if (checkRes.ok) {
+                const existingList = await checkRes.json();
+                const exists = existingList.some(p => (p.porter_id || p.id) === pid);
+                if (exists) {
+                    alert(`Porter ID '${pid}' already exists! Please use the 'Edit Details' tab to edit this porter.`);
+                    return;
+                }
+            }
+        } catch(e) {}
+
+        const data = {
+            porter_id: pid,
+            name: nameVal,
+            full_name: nameVal,
+            phone: phoneVal,
+            phone_number: phoneVal,
+            route: routeVal,
+            route_area: routeVal,
+            status: statusVal,
+            payment_method: document.getElementById('reg_pay_method').value,
+            mpesa_phone: document.getElementById('reg_mpesa_phone').value,
+            account_name: document.getElementById('reg_acc_name').value,
+            account_number: document.getElementById('reg_acc_num').value,
+            action: 'create'
+        };
+
+        try {
+            const res = await fetch('/api/porters', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                alert(`Porter ${pid} Registered Successfully in gakuri_dairy.db!`);
+                document.getElementById('registerForm').reset();
+                adjustPayFields('MPESA');
+                refreshAllViews();
+            } else {
+                alert("Error saving Porter record to gakuri_dairy.db!");
+            }
+        } catch(err) {
+            alert("Error connecting to server to save Porter record!");
+        }
+    }
+
+    function refreshAllViews() {
+        loadDashboardMetrics();
+        loadDirectoryData();
+        populateAssignedCombo();
+        loadPaymentData();
+        loadLedgerData();
+        loadAuditData();
+        liveEditSearch();
+    }
+
+    async function loadDashboardMetrics() {
+        try {
+            const res = await fetch('/api/porters');
+            const list = await res.json();
+
+            document.getElementById('lbl_total_porters').innerText = list.length;
+            document.getElementById('lbl_active_porters').innerText = list.filter(p => p.status === 'Active' || !p.status).length;
+            document.getElementById('status_records').innerHTML = "Porters Registered: <b>" + list.length + "</b>";
+
+            const routes = list.map(p => p.route_area || p.route).filter(Boolean);
+            document.getElementById('lbl_route_cnt').innerText = new Set(routes).size;
+            if(routes.length > 0) {
+                document.getElementById('lbl_top_route').innerText = routes[0];
+            }
+
+            const recentTbody = document.querySelector('#recent_table tbody');
+            recentTbody.innerHTML = "";
+            list.slice(-5).reverse().forEach(p => {
+                const pid = p.porter_id || p.id || '';
+                const pname = p.name || p.full_name || '';
+                const proute = p.route_area || p.route || '';
+                recentTbody.innerHTML += `<tr><td><b>${pid}</b></td><td>${pname}</td><td>${proute}</td></tr>`;
+            });
+        } catch(e) {
+            console.error("Error loading dashboard metrics:", e);
+        }
+    }
+
+    async function loadDirectoryData() {
+        const filter = document.getElementById('dir_search').value.toLowerCase();
+        const statusFilter = document.getElementById('dir_status_filter').value;
+
+        try {
+            const res = await fetch('/api/porters');
+            const list = await res.json();
+
+            const tbody = document.querySelector('#dir_table tbody');
+            tbody.innerHTML = "";
+            list.filter(p => {
+                const pid = (p.porter_id || p.id || '').toString().toLowerCase();
+                const pname = (p.name || p.full_name || '').toLowerCase();
+                const proute = (p.route_area || p.route || '').toLowerCase();
+
+                const matchText = pname.includes(filter) || pid.includes(filter) || proute.includes(filter);
+                const matchStatus = statusFilter === 'All Statuses' || (p.status || 'Active') === statusFilter;
+                return matchText && matchStatus;
+            }).forEach(p => {
+                const pid = p.porter_id || p.id || '';
+                const pname = p.name || p.full_name || '';
+                const pphone = p.phone || p.phone_number || '';
+                const proute = p.route_area || p.route || '';
+                tbody.innerHTML += `<tr><td><b>${pid}</b></td><td>${pname}</td><td>${pphone}</td><td>${proute}</td><td><span class="badge bg-success-subtle text-success">${p.status || 'Active'}</span></td></tr>`;
+            });
+        } catch(e) {
+            console.error("Error loading directory data:", e);
+        }
+    }
+
+    async function liveEditSearch() {
+        const term = document.getElementById('edit_search').value.toLowerCase();
+        try {
+            const res = await fetch('/api/porters');
+            const list = await res.json();
+            const tbody = document.querySelector('#edit_list_table tbody');
+            tbody.innerHTML = "";
+
+            list.filter(p => {
+                const pid = (p.porter_id || p.id || '').toString().toLowerCase();
+                const pname = (p.name || p.full_name || '').toLowerCase();
+                const proute = (p.route_area || p.route || '').toLowerCase();
+                return pid.includes(term) || pname.includes(term) || proute.includes(term);
+            }).forEach(p => {
+                const pid = p.porter_id || p.id || '';
+                const pname = p.name || p.full_name || '';
+                const proute = p.route_area || p.route || '';
+                const tr = document.createElement('tr');
+                tr.style.cursor = 'pointer';
+                tr.innerHTML = `<td><b>${pid}</b></td><td>${pname}</td><td>${proute}</td>`;
+                tr.onclick = function() { selectEditPorter(p); };
+                tbody.appendChild(tr);
+            });
+        } catch(e) {
+            console.error("Error searching porters for editing:", e);
+        }
+    }
+
+    function selectEditPorter(p) {
+        window.selectedPorter = p;
+        const pid = p.porter_id || p.id || '';
+        document.getElementById('e_id').value = pid;
+        document.getElementById('e_name').value = p.name || p.full_name || '';
+        document.getElementById('e_phone').value = p.phone || p.phone_number || '';
+        document.getElementById('e_route').value = p.route_area || p.route || '';
+        document.getElementById('e_status').value = p.status || 'Active';
+        document.getElementById('status_selection').innerHTML = `Selected Porter: <b>${p.name || p.full_name} (${pid})</b>`;
+    }
+
+    async function updatePorter() {
+        const pid = document.getElementById('e_id').value.trim();
+        if(!pid) return alert("Select a porter from the list first!");
+
+        const name = document.getElementById('e_name').value.trim();
+        const phone = document.getElementById('e_phone').value.trim();
+        const route = document.getElementById('e_route').value.trim();
+        const status = document.getElementById('e_status').value;
+
+        if(!name || !phone) {
+            return alert("Full Names and Phone Contact are required!");
+        }
+
+        const numericDbId = (window.selectedPorter && window.selectedPorter.id) ? window.selectedPorter.id : null;
+        const stringPorterId = (window.selectedPorter && window.selectedPorter.porter_id) ? window.selectedPorter.porter_id : pid;
+
+        const updatedData = {
+            id: numericDbId || stringPorterId,
+            porter_id: stringPorterId,
+            name: name,
+            full_name: name,
+            phone: phone,
+            phone_number: phone,
+            route: route,
+            route_area: route,
+            status: status,
+            payment_method: (window.selectedPorter && window.selectedPorter.payment_method) || 'MPESA',
+            mpesa_phone: (window.selectedPorter && window.selectedPorter.mpesa_phone) || phone,
+            account_name: (window.selectedPorter && window.selectedPorter.account_name) || '',
+            account_number: (window.selectedPorter && window.selectedPorter.account_number) || '',
+            action: 'update',
+            type: 'edit',
+            mode: 'update'
+        };
+
+        try {
+            const res = await fetch('/api/porters', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedData)
+            });
+
+            if (res.ok) {
+                alert(`Porter (${stringPorterId}) details successfully updated in gakuri_dairy.db!`);
+                document.getElementById('e_id').value = '';
+                document.getElementById('e_name').value = '';
+                document.getElementById('e_phone').value = '';
+                document.getElementById('e_route').value = '';
+                window.selectedPorter = null;
+                refreshAllViews();
+            } else {
+                const errRes = await res.json().catch(() => ({}));
+                alert(`Failed to update porter: ${errRes.error || errRes.message || ('HTTP ' + res.status)}`);
+            }
+        } catch(err) {
+            alert(`Error connecting to server: ${err.message}`);
+        }
+    }
+
+    async function deletePorter() {
+        const pid = document.getElementById('e_id').value.trim();
+        if(!pid) return alert("Select a porter from the list to delete!");
+        
+        const numericDbId = (window.selectedPorter && window.selectedPorter.id) ? window.selectedPorter.id : null;
+        const stringPorterId = (window.selectedPorter && window.selectedPorter.porter_id) ? window.selectedPorter.porter_id : pid;
+        const porterName = (window.selectedPorter && (window.selectedPorter.name || window.selectedPorter.full_name)) 
+                            ? (window.selectedPorter.name || window.selectedPorter.full_name) 
+                            : (document.getElementById('e_name').value.trim() || 'Delete Target');
+
+        if(!confirm(`Are you sure you want to permanently delete porter profile ${stringPorterId} (${porterName}) from gakuri_dairy.db?`)) {
+            return;
+        }
+
+        const deletePayload = {
+            id: numericDbId || stringPorterId,
+            porter_id: stringPorterId,
+            name: porterName,
+            full_name: porterName,
+            action: 'delete',
+            type: 'delete',
+            mode: 'delete',
+            is_delete: true
+        };
+
+        try {
+            const res = await fetch('/api/porters', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(deletePayload)
+            });
+
+            if (res.ok) {
+                alert(`Porter (${stringPorterId}) successfully removed from gakuri_dairy.db.`);
+                document.getElementById('e_id').value = '';
+                document.getElementById('e_name').value = '';
+                document.getElementById('e_phone').value = '';
+                document.getElementById('e_route').value = '';
+                window.selectedPorter = null;
+                refreshAllViews();
+            } else {
+                const errRes = await res.json().catch(() => ({}));
+                alert(`Failed to delete porter: ${errRes.error || errRes.message || ('HTTP ' + res.status)}`);
+            }
+        } catch(err) {
+            alert(`Error connecting to server: ${err.message}`);
+        }
+    }
+
+    async function populateAssignedCombo() {
+        try {
+            const res = await fetch('/api/porters');
+            const list = await res.json();
+
+            const sel = document.getElementById('assign_porter_combo');
+            if(!sel) return;
+            const currentVal = sel.value;
+            sel.innerHTML = "";
+            list.forEach(p => {
+                const primaryDbId = (p.id || '').toString();
+                const customCode = (p.porter_id || '').toString();
+                const displayCode = customCode || primaryDbId;
+                const pname = p.name || p.full_name;
+                sel.innerHTML += `<option value="${displayCode}" data-db-id="${primaryDbId}" data-porter-code="${customCode}">${pname} (${displayCode})</option>`;
+            });
+            if(currentVal) sel.value = currentVal;
+            loadAssignedCustomers();
+        } catch(e) {
+            console.error("Error populating porter combo:", e);
+        }
+    }
+
+    /* UPDATED: DUAL IDENTIFIER CROSS-CHECK AGAINST CUSTOMERS STORE */
+    async function loadAssignedCustomers() {
+        const sel = document.getElementById('assign_porter_combo');
+        if(!sel) return;
+        const selectedOpt = sel.options[sel.selectedIndex];
+        if(!selectedOpt) return;
+
+        const selVal = (sel.value || '').toString();
+        const dbId = (selectedOpt.getAttribute('data-db-id') || '').toString();
+        const porterCode = (selectedOpt.getAttribute('data-porter-code') || '').toString();
+
+        try {
+            const res = await fetch('/api/customers');
+            const customers = await res.json();
+            const tbody = document.querySelector('#assigned_table tbody');
+            tbody.innerHTML = "";
+
+            // Matches assigned customer against primary key ID OR string code (P003)
+            const list = customers.filter(c => {
+                const assigned = (c.assigned_porter_id || c.porter_id || '').toString();
+                return assigned !== '' && (assigned === selVal || assigned === dbId || assigned === porterCode);
+            });
+
+            if(list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">No customers currently assigned to this porter.</td></tr>';
+                return;
+            }
+            list.forEach(c => {
+                tbody.innerHTML += `<tr><td><b>${c.id}</b></td><td>${c.full_name || c.name}</td><td>${c.phone || '-'}</td><td>${c.collection_point || c.route || '-'}</td><td><span class="badge bg-success-subtle text-success">${c.status || 'Active'}</span></td></tr>`;
+            });
+        } catch(e) {
+            console.error("Error loading assigned customers:", e);
+        }
+    }
+
+    async function loadPaymentData() {
+        try {
+            const res = await fetch('/api/porters');
+            const list = await res.json();
+
+            const tbody = document.querySelector('#pay_table tbody');
+            tbody.innerHTML = "";
+            list.forEach(p => {
+                const pid = p.porter_id || p.id;
+                const pname = p.name || p.full_name;
+                tbody.innerHTML += `<tr><td><b>${pid}</b></td><td>${pname}</td><td>${p.payment_method || 'MPESA'}</td><td>${p.mpesa_phone || '-'}</td><td>${p.account_number || '-'}</td></tr>`;
+            });
+        } catch(e) {
+            console.error("Error loading payment data:", e);
+        }
+    }
+
+    async function loadLedgerData() {
+        try {
+            const [pRes, cRes] = await Promise.all([fetch('/api/porters'), fetch('/api/customers')]);
+            const porters = await pRes.json();
+            const customers = await cRes.json();
+
+            const tbody = document.querySelector('#ledger_table tbody');
+            tbody.innerHTML = "";
+            porters.forEach(p => {
+                const primaryDbId = (p.id || '').toString();
+                const customCode = (p.porter_id || '').toString();
+                const displayCode = customCode || primaryDbId;
+                const pname = p.name || p.full_name;
+
+                const count = customers.filter(c => {
+                    const assigned = (c.assigned_porter_id || c.porter_id || '').toString();
+                    return assigned !== '' && (assigned === displayCode || assigned === primaryDbId || assigned === customCode);
+                }).length;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><b>${displayCode}</b></td>
+                        <td>${pname}</td>
+                        <td>${count} customers assigned</td>
+                        <td class="font-monospace">0.00 L</td>
+                        <td class="font-monospace">0.00 L</td>
+                        <td>
+                            <div class="progress-bar-custom">
+                                <div class="progress-fill-custom"></div>
+                                <div class="progress-text-custom">100% (Active)</div>
+                            </div>
+                        </td>
+                    </tr>`;
+            });
+        } catch(e) {
+            console.error("Error loading ledger data:", e);
+        }
+    }
+
+    async function loadAuditData() {
+        try {
+            const res = await fetch('/api/audits');
+            const audits = await res.json();
+            const tbody = document.querySelector('#audit_table tbody');
+            tbody.innerHTML = "";
+            audits.slice().reverse().forEach(a => {
+                tbody.innerHTML += `<tr><td>#${a.id}</td><td><b>${a.porter_id || '-'}</b></td><td><span class="badge bg-primary-subtle text-primary">${a.action}</span></td><td>${a.field_changed || '-'}</td><td>${a.old_value || '-'}</td><td>${a.new_value || a.details || '-'}</td></tr>`;
+            });
+        } catch(e) {
+            console.error("Error loading audit data:", e);
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", refreshAllViews);
+</script>
+</body>
+</html>

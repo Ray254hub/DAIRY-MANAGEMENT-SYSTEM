@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .login-container {
+        min-height: 85vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+    }
+
+    .login-card {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 14px;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+        width: 100%;
+        max-width: 440px;
+        padding: 28px;
+    }
+
+    .brand-title {
+        font-family: 'Outfit', -apple-system, sans-serif;
+        font-weight: 800;
+        font-size: 1.35rem;
+        color: #0052cc;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .icon-badge {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: #eff6ff;
+        color: #0066ff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+    }
+
+    .form-control, .form-select {
+        height: 44px;
+        font-size: 0.95rem;
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #0066ff;
+        box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.15);
+    }
+</style>
+
+<div class="login-container">
+    <div class="login-card">
+        <div class="text-center mb-4">
+            <div class="icon-badge mb-2">
+                <i class="fa-solid fa-user-lock"></i>
+            </div>
+            <h5 class="brand-title m-0">GAKURI DAIRY SYSTEM</h5>
+            <small class="text-muted fw-bold">Role-Based System Authentication</small>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-danger py-2 px-3 fw-semibold small mb-3 text-center" role="alert">
+            <i class="fa-solid fa-triangle-exclamation me-1"></i> {{ error }}
+        </div>
+        {% endif %}
+
+        <form action="/login" method="POST">
+            <div class="mb-3">
+                <label class="form-label fw-bold small text-dark">Select System Role *</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light text-muted"><i class="fa-solid fa-user-tag"></i></span>
+                    <select name="role" id="role_select" class="form-select fw-semibold" onchange="togglePorterSelect()" required>
+                        <option value="Admin" selected>Admin (Full Access to All Modules)</option>
+                        <option value="Accountant">Accountant (accountant.html)</option>
+                        <option value="Manager">Manager (Dashboard & Reports)</option>
+                        <option value="Porter">Porter (porter_dashboard.html)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Dynamic Porter Select Dropdown -->
+            <div class="mb-3" id="porter_account_group" style="display: none;">
+                <label class="form-label fw-bold small text-primary">Select Porter Profile Account *</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light text-primary"><i class="fa-solid fa-truck-field"></i></span>
+                    <select name="porter_id" id="porter_id_select" class="form-select fw-bold">
+                        <option value="">-- Choose Stored Porter Account --</option>
+                        {% for p in porters %}
+                            <option value="{{ p.porter_id or p.id }}">{{ p.porter_id or p.id }} - {{ p.name }} ({{ p.route_area or 'General Route' }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-3" id="username_group">
+                <label class="form-label fw-bold small text-dark">Username</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light text-muted"><i class="fa-solid fa-user"></i></span>
+                    <input type="text" name="username" class="form-control" value="admin" placeholder="Enter username" autocomplete="username">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold small text-dark">Password / Passcode</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light text-muted"><i class="fa-solid fa-key"></i></span>
+                    <input type="password" name="password" class="form-control fw-bold" value="7059" placeholder="Enter password" required autocomplete="current-password">
+                </div>
+                <small class="text-muted d-block mt-1">Testing passcode: <code>7059</code></small>
+            </div>
+
+            <button type="submit" class="btn btn-primary rounded-pill w-100 fw-bold py-2 shadow-sm mt-3">
+                <i class="fa-solid fa-right-to-bracket me-1"></i> Log In to Selected Role
+            </button>
+        </form>
+
+        <div class="mt-4 pt-3 border-top text-center">
+            <small class="text-muted">Connected to <b>gakuri_dairy.db</b></small>
+        </div>
+    </div>
+</div>
+
+<script>
+    function togglePorterSelect() {
+        const role = document.getElementById('role_select').value;
+        const porterGroup = document.getElementById('porter_account_group');
+        const usernameGroup = document.getElementById('username_group');
+        const porterSelect = document.getElementById('porter_id_select');
+
+        if (role === 'Porter') {
+            porterGroup.style.display = 'block';
+            usernameGroup.style.display = 'none';
+            porterSelect.required = true;
+        } else {
+            porterGroup.style.display = 'none';
+            usernameGroup.style.display = 'block';
+            porterSelect.required = false;
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,820 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- SheetJS (xlsx) for clean Client-side Excel Export -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style>
+    :root {
+        --primary-blue: #0066ff;
+        --accent-cyan: #00d2ff;
+        --brand-blue-gradient: linear-gradient(135deg, #0044cc 0%, #0066ff 100%);
+        --text-dark: #0f172a;
+        --card-bg: #ffffff;
+        --border-color: #cbd5e1;
+    }
+
+    /* OPTIMIZED RESPONSIVE WRAPPER - Smooth scrolling across mobile & desktop */
+    .reports-fullscreen-wrapper {
+        position: relative;
+        width: 100%;
+        min-height: 100vh;
+        z-index: 10;
+        background: #f8fafc;
+        padding: 1rem;
+        box-sizing: border-box;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-size: 0.85rem;
+        color: var(--text-dark);
+        -webkit-overflow-scrolling: touch;
+        overflow-x: hidden;
+    }
+
+    @media (min-width: 768px) {
+        .reports-fullscreen-wrapper {
+            padding: 1.5rem;
+        }
+    }
+
+    /* HIGH-PERFORMANCE CARD STYLING */
+    .glass-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+        transition: border-color 0.2s ease;
+    }
+
+    /* CLEAN MODERN ICON BOXES */
+    .icon-3d {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: #eff6ff;
+        color: var(--primary-blue);
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    /* CLEAN ACCENT BORDER */
+    .glow-border {
+        border-radius: 14px;
+    }
+
+    /* DOWNLOAD BUTTON */
+    .btn-3d-download {
+        background: #10b981;
+        border: none;
+        color: #ffffff;
+        font-weight: 700;
+        padding: 6px 14px;
+        border-radius: 20px;
+        transition: background-color 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.8rem;
+    }
+    .btn-3d-download:hover {
+        background: #059669;
+        color: #ffffff;
+    }
+
+    /* MOBILE-FRIENDLY TOUCH INPUTS */
+    .form-control-xs, .form-select-xs {
+        min-height: 40px;
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background: #ffffff;
+        font-weight: 600;
+    }
+    .form-control-xs:focus, .form-select-xs:focus {
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 0.2rem rgba(0, 102, 255, 0.15);
+    }
+
+    .report-title {
+        font-size: 0.92rem;
+        font-weight: 800;
+        color: var(--primary-blue);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 8px;
+        margin-bottom: 12px;
+    }
+
+    .summary-card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-left: 5px solid var(--primary-blue);
+        border-radius: 12px;
+        padding: 12px 14px;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+    }
+
+    .summary-title {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #64748b;
+        letter-spacing: 0.4px;
+    }
+    .summary-value {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: var(--primary-blue);
+        margin: 2px 0;
+    }
+    .summary-sub {
+        font-size: 0.7rem;
+        color: #64748b;
+    }
+
+    /* Smooth Scrolling Responsive Table */
+    .table-container {
+        border-radius: 10px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid #e2e8f0;
+        background: #ffffff;
+    }
+
+    table.report-table {
+        width: 100%;
+        margin-bottom: 0;
+        font-size: 0.82rem;
+        white-space: nowrap;
+    }
+    table.report-table th {
+        background: var(--brand-blue-gradient);
+        color: #ffffff;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.74rem;
+        padding: 10px 12px;
+        border: none;
+        letter-spacing: 0.5px;
+    }
+    table.report-table td {
+        padding: 10px 12px;
+        vertical-align: middle;
+        border-color: #f1f5f9;
+        background: #ffffff;
+    }
+    table.report-table tbody tr:hover td {
+        background-color: #f8fafc;
+    }
+
+    .pulse-badge {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #10b981;
+    }
+
+    @media print {
+        .no-print { display: none !important; }
+        .reports-fullscreen-wrapper { 
+            position: static !important; 
+            width: 100% !important; 
+            height: auto !important; 
+            background: #ffffff !important; 
+            padding: 0 !important; 
+            overflow: visible !important;
+        }
+        .glass-card { border: none !important; padding: 0 !important; box-shadow: none !important; background: transparent !important; }
+        table.report-table th { background: #0044cc !important; color: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+</style>
+
+<div class="reports-fullscreen-wrapper" id="reports_fullscreen_container">
+
+    <!-- Top Header Navigation & Action Bar -->
+    <div class="glass-card p-3 d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3 no-print">
+        <div class="d-flex align-items-center gap-2 gap-sm-3">
+            <span class="icon-3d"><i class="fa-solid fa-file-chart-column"></i></span>
+            <div>
+                <h5 class="fw-bold text-dark mb-0" style="font-size: 1rem; letter-spacing: 0.3px;">
+                    Accountant & Analytics Reporting Module
+                </h5>
+                <small class="text-muted fw-semibold" style="font-size: 0.72rem;">GAKURI DAIRY MANAGEMENT SYSTEM v1.0</small>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap w-100 w-md-auto justify-content-start justify-content-md-end">
+            <span id="db_connection_badge" class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2 rounded-pill font-monospace">
+                <span class="pulse-badge me-1"></span> Connecting SQLite...
+            </span>
+            <button class="btn btn-sm btn-dark fw-bold rounded-pill px-3" onclick="toggleFullScreenMode()">
+                <i class="fa-solid fa-expand me-1"></i> Fullscreen Standard
+            </button>
+            <button class="btn btn-sm btn-outline-primary fw-bold rounded-pill px-3" onclick="exportCSV()">
+                <i class="fa-solid fa-file-csv me-1"></i> CSV
+            </button>
+            <button class="btn-3d-download" onclick="exportExcel()">
+                <i class="fa-solid fa-file-excel"></i>
+                <span>Export Excel</span>
+            </button>
+            <button class="btn btn-sm btn-primary fw-bold rounded-pill px-3" onclick="window.print()">
+                <i class="fa-solid fa-print me-1"></i> Print
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter Configuration Section -->
+    <div class="glass-card p-3 mb-3 no-print">
+        <div class="report-title d-flex align-items-center gap-2">
+            <span class="icon-3d" style="width:26px; height:26px; font-size:0.75rem;"><i class="fa-solid fa-filter"></i></span> 
+            Report Configuration & Multi-Module Filters
+        </div>
+        <div class="row g-2 align-items-end">
+            <div class="col-12 col-sm-6 col-md-3">
+                <label class="fw-bold text-dark mb-1">Report Type:</label>
+                <select id="report_type" class="form-select form-select-xs fw-semibold" onchange="generateReport()">
+                    <option value="intake">Milk Collection & Intake Log</option>
+                    <option value="reconciliation">Scale Discrepancy & Reconciliation</option>
+                    <option value="payout">Farmer Financial Payout Report</option>
+                    <option value="porters_summary">Porters Active Load Summary</option>
+                    <option value="customers_master">Customer Registry & Route Allocation</option>
+                    <option value="dashboard_audit">System Audit Logs & Operations</option>
+                </select>
+            </div>
+            <div class="col-6 col-sm-3 col-md-2">
+                <label class="fw-bold text-dark mb-1">Start Date:</label>
+                <input type="date" id="start_date" class="form-control form-control-xs fw-semibold" onchange="generateReport()">
+            </div>
+            <div class="col-6 col-sm-3 col-md-2">
+                <label class="fw-bold text-dark mb-1">End Date:</label>
+                <input type="date" id="end_date" class="form-control form-control-xs fw-semibold" onchange="generateReport()">
+            </div>
+            <div class="col-12 col-sm-8 col-md-3">
+                <label class="fw-bold text-dark mb-1">Filter Porter:</label>
+                <select id="filter_porter" class="form-select form-select-xs fw-semibold" onchange="generateReport()">
+                    <option value="all">All Porters</option>
+                </select>
+            </div>
+            <div class="col-12 col-sm-4 col-md-2">
+                <button class="btn btn-primary rounded-pill w-100 fw-bold shadow-sm" style="min-height: 40px; font-size:0.82rem;" onclick="generateReport()">
+                    <i class="fa-solid fa-magnifying-glass me-1"></i> Generate
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary KPI Indicators -->
+    <div class="row g-2 g-md-3 mb-3">
+        <div class="col-6 col-md-3">
+            <div class="summary-card glow-border" style="border-left-color: #0066ff;">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="summary-title">Total Volume</div>
+                        <div class="summary-value" id="summary_vol">0.00 L</div>
+                        <div class="summary-sub">Filtered intake volume</div>
+                    </div>
+                    <span class="icon-3d text-primary"><i class="fa-solid fa-bottle-droplet"></i></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="summary-card glow-border" style="border-left-color: #10b981;">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="summary-title">Estimated Payout</div>
+                        <div class="summary-value" id="summary_payout" style="color: #10b981;">KES 0.00</div>
+                        <div class="summary-sub">Rate @ KES 50.00/L</div>
+                    </div>
+                    <span class="icon-3d text-success"><i class="fa-solid fa-money-bill-wave"></i></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="summary-card glow-border" style="border-left-color: #f59e0b;">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="summary-title">Matched Records</div>
+                        <div class="summary-value" id="summary_records" style="color: #d97706;">0</div>
+                        <div class="summary-sub">Active entries</div>
+                    </div>
+                    <span class="icon-3d text-warning"><i class="fa-solid fa-list-check"></i></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="summary-card glow-border" style="border-left-color: #ef4444;">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="summary-title">Net Variance</div>
+                        <div class="summary-value" id="summary_variance" style="color: #ef4444;">0.00 L</div>
+                        <div class="summary-sub">Scale discrepancy</div>
+                    </div>
+                    <span class="icon-3d text-danger"><i class="fa-solid fa-scale-unbalanced"></i></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Output Table Card -->
+    <div class="glass-card p-3 p-md-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div class="report-title m-0 border-0 d-flex align-items-center gap-2" id="report_display_title">
+                <span class="icon-3d" style="width:28px; height:28px; font-size:0.8rem;"><i class="fa-solid fa-table"></i></span> Milk Collection & Intake Log
+            </div>
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill font-monospace" id="report_stamp">Period Active</span>
+        </div>
+        <div class="table-responsive table-container">
+            <table class="table table-hover align-middle report-table" id="exportable_report_table">
+                <thead id="report_thead">
+                    <!-- Dynamic headers loaded via JavaScript -->
+                </thead>
+                <tbody id="report_tbody">
+                    <tr><td colspan="7" class="text-center text-muted py-4">Connecting and querying gakuri_dairy.db...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Initialize date filters
+    const todayStr = new Date().toISOString().split('T')[0];
+    const firstDayStr = todayStr.substring(0, 7) + "-01";
+    document.getElementById('start_date').value = firstDayStr;
+    document.getElementById('end_date').value = todayStr;
+
+    let allPorters = [];
+    let allCustomers = [];
+    let allIntakes = [];
+    let allAudits = [];
+
+    // Fullscreen Toggle Method
+    function toggleFullScreenMode() {
+        const elem = document.documentElement;
+        if (!document.fullscreenElement) {
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) {
+                elem.msRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+    }
+
+    // Helper functions for dynamic data handling across variable database keys
+    function getCustId(row) {
+        return String(row.customer_id || row.cust_id || row.id || '').trim();
+    }
+
+    function getPorterId(row) {
+        return String(row.porter_id || row.assigned_porter_id || row.id || '').trim();
+    }
+
+    function getRecordVol(row) {
+        if (row.quantity !== undefined && row.quantity !== null && parseFloat(row.quantity) > 0) {
+            return parseFloat(row.quantity);
+        }
+        const m = parseFloat(row.morning_vol) || 0;
+        const a = parseFloat(row.afternoon_vol) || 0;
+        return m + a;
+    }
+
+    function getRecordDate(row) {
+        if (row.collection_date) return String(row.collection_date).trim();
+        if (row.created_at) return String(row.created_at).split(' ')[0].trim();
+        return '';
+    }
+
+    async function loadReportData() {
+        const badge = document.getElementById('db_connection_badge');
+        try {
+            const [pRes, cRes, iRes, aRes] = await Promise.all([
+                fetch('/api/porters'),
+                fetch('/api/customers'),
+                fetch('/api/intakes'),
+                fetch('/api/audits')
+            ]);
+
+            allPorters = pRes.ok ? await pRes.json() : [];
+            allCustomers = cRes.ok ? await cRes.json() : [];
+            allIntakes = iRes.ok ? await iRes.json() : [];
+            allAudits = aRes.ok ? await aRes.json() : [];
+
+            // Fallback to unified accountant route if individual endpoints yield empty sets
+            if (!allIntakes.length || !allPorters.length || !allCustomers.length) {
+                const accRes = await fetch('/api/accountant/data');
+                if (accRes.ok) {
+                    const accData = await accRes.json();
+                    if (!allPorters.length) allPorters = accData.porters || [];
+                    if (!allCustomers.length) allCustomers = accData.customers || [];
+                    if (!allIntakes.length) allIntakes = accData.intake_records || accData.intakes || [];
+                    if (!allAudits.length) allAudits = accData.audit_logs || [];
+                }
+            }
+
+            badge.className = "badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill font-monospace";
+            badge.innerHTML = `<span class="pulse-badge me-1"></span> gakuri_dairy.db Connected (${allIntakes.length} Intakes)`;
+
+            // Populate Porter Selection Dropdown
+            const pSelect = document.getElementById('filter_porter');
+            pSelect.innerHTML = '<option value="all">All Porters</option>';
+            allPorters.forEach(p => {
+                const pid = getPorterId(p);
+                pSelect.innerHTML += `<option value="${pid}">${pid} - ${p.name || 'Porter'}</option>`;
+            });
+
+            generateReport();
+        } catch(err) {
+            console.error("Error connecting to SQLite endpoints:", err);
+            badge.className = "badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 rounded-pill font-monospace";
+            badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation me-1"></i> Database Error`;
+            document.getElementById('report_tbody').innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4"><i class="fa-solid fa-triangle-exclamation me-1"></i> Failed to connect to gakuri_dairy.db API. Please check server status.</td></tr>';
+        }
+    }
+
+    function generateReport() {
+        const type = document.getElementById('report_type').value;
+        const startDate = document.getElementById('start_date').value;
+        const endDate = document.getElementById('end_date').value;
+        const porterFilter = document.getElementById('filter_porter').value;
+
+        let filteredIntakes = allIntakes.filter(i => {
+            const d = getRecordDate(i);
+            const pid = getPorterId(i);
+            const matchDate = (!startDate || !d || d >= startDate) && (!endDate || !d || d <= endDate);
+            const matchPorter = (porterFilter === 'all' || pid === porterFilter);
+            return matchDate && matchPorter;
+        });
+
+        document.getElementById('report_stamp').innerText = `Period: ${startDate || 'Start'} to ${endDate || 'End'}`;
+
+        if (type === 'intake') {
+            renderIntakeReport(filteredIntakes);
+        } else if (type === 'reconciliation') {
+            renderReconciliationReport(filteredIntakes);
+        } else if (type === 'payout') {
+            renderPayoutReport(filteredIntakes);
+        } else if (type === 'porters_summary') {
+            renderPortersSummaryReport(filteredIntakes);
+        } else if (type === 'customers_master') {
+            renderCustomersMasterReport();
+        } else if (type === 'dashboard_audit') {
+            renderAuditLogReport();
+        }
+    }
+
+    function renderIntakeReport(records) {
+        document.getElementById('report_display_title').innerHTML = '<span class="icon-3d" style="width:28px; height:28px; font-size:0.8rem;"><i class="fa-solid fa-bottle-droplet"></i></span> Milk Collection & Intake Log';
+        
+        document.getElementById('report_thead').innerHTML = `
+            <tr>
+                <th>Date</th>
+                <th>Farmer ID</th>
+                <th>Farmer Name</th>
+                <th>Porter</th>
+                <th class="text-end">Morning (L)</th>
+                <th class="text-end">Afternoon (L)</th>
+                <th class="text-end">Total Volume (L)</th>
+            </tr>
+        `;
+
+        const tbody = document.getElementById('report_tbody');
+        tbody.innerHTML = "";
+
+        let totalVol = 0;
+        if(records.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No intake records matching criteria found in gakuri_dairy.db.</td></tr>';
+        } else {
+            records.forEach(r => {
+                const m = parseFloat(r.morning_vol) || 0;
+                const a = parseFloat(r.afternoon_vol) || 0;
+                const dayTotal = getRecordVol(r);
+                totalVol += dayTotal;
+
+                const cid = getCustId(r);
+                const pid = getPorterId(r);
+                const cObj = allCustomers.find(c => getCustId(c) === cid);
+                const pObj = allPorters.find(p => getPorterId(p) === pid);
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="fw-semibold">${getRecordDate(r) || '-'}</td>
+                        <td><span class="badge bg-light text-dark border font-monospace">${cid || '-'}</span></td>
+                        <td class="fw-semibold">${cObj ? (cObj.full_name || cObj.name) : (r.customer_name || 'Farmer')}</td>
+                        <td><span class="badge bg-secondary font-monospace">${pObj ? pObj.name : (r.porter_name || pid || 'Porter')}</span></td>
+                        <td class="text-end font-monospace">${m.toFixed(1)} L</td>
+                        <td class="text-end font-monospace">${a.toFixed(1)} L</td>
+                        <td class="text-end font-monospace fw-bold text-primary">${dayTotal.toFixed(1)} L</td>
+                    </tr>
+                `;
+            });
+        }
+
+        document.getElementById('summary_vol').innerText = totalVol.toFixed(2) + " L";
+        document.getElementById('summary_payout').innerText = "KES " + (totalVol * 50).toLocaleString('en-KE', {minimumFractionDigits: 2});
+        document.getElementById('summary_records').innerText = records.length;
+        document.getElementById('summary_variance').innerText = "N/A";
+    }
+
+    function renderReconciliationReport(records) {
+        document.getElementById('report_display_title').innerHTML = '<span class="icon-3d" style="width:28px; height:28px; font-size:0.8rem;"><i class="fa-solid fa-scale-balanced"></i></span> Scale Discrepancy & Reconciliation Report';
+        
+        document.getElementById('report_thead').innerHTML = `
+            <tr>
+                <th>Date</th>
+                <th>Porter ID</th>
+                <th>Porter Name</th>
+                <th class="text-end">Porter Sum (L)</th>
+                <th class="text-end">Station Weighed (L)</th>
+                <th class="text-end">Variance (L)</th>
+                <th>Status</th>
+            </tr>
+        `;
+
+        const grouped = {};
+        records.forEach(i => {
+            const date = getRecordDate(i);
+            const pid = getPorterId(i);
+            const key = `${date}_${pid}`;
+
+            if(!grouped[key]) {
+                grouped[key] = {
+                    date: date,
+                    porter_id: pid,
+                    station_reading: parseFloat(i.station_weighed) || 0,
+                    porter_sum: 0
+                };
+            }
+            grouped[key].porter_sum += getRecordVol(i);
+        });
+
+        const entries = Object.values(grouped);
+        const tbody = document.getElementById('report_tbody');
+        tbody.innerHTML = "";
+
+        let totalPorterVol = 0;
+        let totalNetVar = 0;
+
+        if(entries.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No weighbridge records match criteria in gakuri_dairy.db.</td></tr>';
+        } else {
+            entries.forEach(l => {
+                const variance = l.porter_sum - l.station_reading;
+                totalPorterVol += l.porter_sum;
+                totalNetVar += variance;
+
+                const pObj = allPorters.find(p => getPorterId(p) === l.porter_id);
+                const statusBadge = variance > 0 ? 
+                    '<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">GAIN</span>' : 
+                    (variance < 0 ? '<span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">LOSS</span>' : 
+                    '<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">BALANCED</span>');
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="fw-semibold">${l.date || '-'}</td>
+                        <td><span class="badge bg-secondary font-monospace">${l.porter_id || '-'}</span></td>
+                        <td class="fw-semibold">${pObj ? pObj.name : l.porter_id}</td>
+                        <td class="text-end font-monospace">${l.porter_sum.toFixed(2)} L</td>
+                        <td class="text-end font-monospace">${l.station_reading.toFixed(2)} L</td>
+                        <td class="text-end font-monospace fw-bold ${variance < 0 ? 'text-danger' : (variance > 0 ? 'text-success' : '')}">${variance > 0 ? '+' : ''}${variance.toFixed(2)} L</td>
+                        <td>${statusBadge}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        document.getElementById('summary_vol').innerText = totalPorterVol.toFixed(2) + " L";
+        document.getElementById('summary_payout').innerText = "KES " + (totalPorterVol * 50).toLocaleString('en-KE', {minimumFractionDigits: 2});
+        document.getElementById('summary_records').innerText = entries.length;
+        document.getElementById('summary_variance').innerText = (totalNetVar > 0 ? "+" : "") + totalNetVar.toFixed(2) + " L";
+    }
+
+    function renderPayoutReport(records) {
+        document.getElementById('report_display_title').innerHTML = '<span class="icon-3d" style="width:28px; height:28px; font-size:0.8rem;"><i class="fa-solid fa-file-invoice-dollar"></i></span> Farmer Financial Payout Report';
+        
+        document.getElementById('report_thead').innerHTML = `
+            <tr>
+                <th>Farmer ID</th>
+                <th>Farmer Name</th>
+                <th>Phone Contact</th>
+                <th>Payment Method</th>
+                <th class="text-end">Total Volume (L)</th>
+                <th class="text-end">Rate (KES)</th>
+                <th class="text-end">Gross Payout (KES)</th>
+            </tr>
+        `;
+
+        const tbody = document.getElementById('report_tbody');
+        tbody.innerHTML = "";
+
+        let grandVol = 0;
+        let farmerCount = 0;
+
+        allCustomers.forEach(c => {
+            const cid = getCustId(c);
+            let totalVol = 0;
+            records.forEach(i => {
+                if(getCustId(i) === cid) {
+                    totalVol += getRecordVol(i);
+                }
+            });
+
+            if(totalVol > 0) {
+                grandVol += totalVol;
+                farmerCount++;
+                const gross = totalVol * 50;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><span class="badge bg-light text-dark border font-monospace">${cid}</span></td>
+                        <td class="fw-semibold">${c.full_name || c.name}</td>
+                        <td class="font-monospace">${c.phone || '-'}</td>
+                        <td><span class="badge bg-info-subtle text-info border border-info-subtle">${c.payment_method || 'MPESA'}</span></td>
+                        <td class="text-end font-monospace fw-bold">${totalVol.toFixed(2)} L</td>
+                        <td class="text-end font-monospace">50.00</td>
+                        <td class="text-end font-monospace fw-bold text-success">KES ${gross.toLocaleString('en-KE', {minimumFractionDigits: 2})}</td>
+                    </tr>
+                `;
+            }
+        });
+
+        if(farmerCount === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No farmer deliveries match selected criteria in gakuri_dairy.db.</td></tr>';
+        }
+
+        document.getElementById('summary_vol').innerText = grandVol.toFixed(2) + " L";
+        document.getElementById('summary_payout').innerText = "KES " + (grandVol * 50).toLocaleString('en-KE', {minimumFractionDigits: 2});
+        document.getElementById('summary_records').innerText = farmerCount;
+        document.getElementById('summary_variance').innerText = "N/A";
+    }
+
+    function renderPortersSummaryReport(records) {
+        document.getElementById('report_display_title').innerHTML = '<span class="icon-3d" style="width:28px; height:28px; font-size:0.8rem;"><i class="fa-solid fa-truck-ramp-box"></i></span> Porters Active Load & Performance Summary';
+        
+        document.getElementById('report_thead').innerHTML = `
+            <tr>
+                <th>Porter ID</th>
+                <th>Porter Name</th>
+                <th>Phone Contact</th>
+                <th>Route / Area</th>
+                <th>Assigned Farmers</th>
+                <th class="text-end">Period Volume (L)</th>
+            </tr>
+        `;
+
+        const tbody = document.getElementById('report_tbody');
+        tbody.innerHTML = "";
+
+        let grandVol = 0;
+        let activePorters = 0;
+
+        allPorters.forEach(p => {
+            const pid = getPorterId(p);
+            const assignedCount = allCustomers.filter(c => getPorterId(c) === pid).length;
+            
+            let pVol = 0;
+            records.forEach(i => {
+                if(getPorterId(i) === pid) {
+                    pVol += getRecordVol(i);
+                }
+            });
+
+            grandVol += pVol;
+            activePorters++;
+
+            tbody.innerHTML += `
+                <tr>
+                    <td><span class="badge bg-secondary font-monospace">${pid || '-'}</span></td>
+                    <td class="fw-semibold">${p.name || 'Porter'}</td>
+                    <td class="font-monospace">${p.phone || '-'}</td>
+                    <td>${p.route_area || p.route || '-'}</td>
+                    <td><span class="badge bg-primary-subtle text-primary border border-primary-subtle">${assignedCount} Farmers</span></td>
+                    <td class="text-end font-monospace fw-bold text-primary">${pVol.toFixed(2)} L</td>
+                </tr>
+            `;
+        });
+
+        document.getElementById('summary_vol').innerText = grandVol.toFixed(2) + " L";
+        document.getElementById('summary_payout').innerText = "KES " + (grandVol * 50).toLocaleString('en-KE', {minimumFractionDigits: 2});
+        document.getElementById('summary_records').innerText = activePorters;
+        document.getElementById('summary_variance').innerText = "N/A";
+    }
+
+    function renderCustomersMasterReport() {
+        document.getElementById('report_display_title').innerHTML = '<span class="icon-3d" style="width:28px; height:28px; font-size:0.8rem;"><i class="fa-solid fa-users"></i></span> Customer Registry & Route Allocation Report';
+        
+        document.getElementById('report_thead').innerHTML = `
+            <tr>
+                <th>Customer ID</th>
+                <th>Full Name</th>
+                <th>Phone Number</th>
+                <th>Collection Point</th>
+                <th>Status</th>
+                <th>Assigned Porter</th>
+                <th>Payment Method</th>
+            </tr>
+        `;
+
+        const tbody = document.getElementById('report_tbody');
+        tbody.innerHTML = "";
+
+        allCustomers.forEach(c => {
+            const cid = getCustId(c);
+            const pid = getPorterId(c);
+            const pObj = allPorters.find(p => getPorterId(p) === pid);
+            const statusBadge = c.status === 'Active' ? 
+                '<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">Active</span>' : 
+                '<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">Inactive</span>';
+
+            tbody.innerHTML += `
+                <tr>
+                    <td><span class="badge bg-light text-dark border font-monospace">${cid}</span></td>
+                    <td class="fw-semibold">${c.full_name || c.name}</td>
+                    <td class="font-monospace">${c.phone || '-'}</td>
+                    <td>${c.collection_point || '-'}</td>
+                    <td>${statusBadge}</td>
+                    <td><span class="badge bg-secondary font-monospace">${pObj ? pObj.name : (pid || 'Unassigned')}</span></td>
+                    <td><span class="badge bg-info-subtle text-info border border-info-subtle">${c.payment_method || 'MPESA'}</span></td>
+                </tr>
+            `;
+        });
+
+        document.getElementById('summary_vol').innerText = "N/A";
+        document.getElementById('summary_payout').innerText = "N/A";
+        document.getElementById('summary_records').innerText = allCustomers.length;
+        document.getElementById('summary_variance').innerText = "N/A";
+    }
+
+    function renderAuditLogReport() {
+        document.getElementById('report_display_title').innerHTML = '<span class="icon-3d" style="width:28px; height:28px; font-size:0.8rem;"><i class="fa-solid fa-clock-rotate-left"></i></span> System Audit Logs & Operational Activity';
+        
+        document.getElementById('report_thead').innerHTML = `
+            <tr>
+                <th>Timestamp</th>
+                <th>Action Performed</th>
+                <th>Activity Details</th>
+            </tr>
+        `;
+
+        const tbody = document.getElementById('report_tbody');
+        tbody.innerHTML = "";
+
+        allAudits.forEach(a => {
+            tbody.innerHTML += `
+                <tr>
+                    <td class="font-monospace" style="white-space: nowrap;">${a.created_at || '-'}</td>
+                    <td><span class="badge bg-primary-subtle text-primary border border-primary-subtle">${a.action || 'Log'}</span></td>
+                    <td>${a.details || '-'}</td>
+                </tr>
+            `;
+        });
+
+        document.getElementById('summary_vol').innerText = "N/A";
+        document.getElementById('summary_payout').innerText = "N/A";
+        document.getElementById('summary_records').innerText = allAudits.length;
+        document.getElementById('summary_variance').innerText = "N/A";
+    }
+
+    function exportCSV() {
+        const table = document.getElementById("exportable_report_table");
+        let csv = [];
+        for (let i = 0; i < table.rows.length; i++) {
+            let row = [], cols = table.rows[i].querySelectorAll("td, th");
+            for (let j = 0; j < cols.length; j++) {
+                row.push('"' + cols[j].innerText.replace(/"/g, '""') + '"');
+            }
+            csv.push(row.join(","));
+        }
+
+        const csvFile = new Blob([csv.join("\n")], { type: "text/csv" });
+        const downloadLink = document.createElement("a");
+        downloadLink.download = `Gakuri_Dairy_Report_${document.getElementById('report_type').value}_${todayStr}.csv`;
+        downloadLink.href = window.URL.createObjectURL(csvFile);
+        downloadLink.style.display = "none";
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+    }
+
+    function exportExcel() {
+        const table = document.getElementById("exportable_report_table");
+        const workbook = XLSX.utils.table_to_book(table, { sheet: "Operational Report" });
+        const reportType = document.getElementById('report_type').value;
+        const startDate = document.getElementById('start_date').value || 'ALL';
+        const endDate = document.getElementById('end_date').value || 'ALL';
+        XLSX.writeFile(workbook, `Gakuri_Dairy_${reportType}_${startDate}_to_${endDate}.xlsx`);
+    }
+
+    document.addEventListener("DOMContentLoaded", loadReportData);
+</script>
+{% endblock %}

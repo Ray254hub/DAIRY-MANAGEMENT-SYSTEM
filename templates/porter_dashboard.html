@@ -1,0 +1,467 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* ==========================================================
+       1. HIDE BASE LAYOUT SIDEBAR & EXPAND CONTAINER
+       ========================================================== */
+    .sidebar, 
+    #sidebar, 
+    .main-sidebar, 
+    .app-sidebar, 
+    .nav-sidebar, 
+    aside,
+    [class*="sidebar"] {
+        display: none !important;
+        width: 0 !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+
+    .main-content, 
+    .content-wrapper, 
+    .main-wrapper, 
+    #content, 
+    main {
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin-right: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .porter-fullscreen-wrapper {
+        min-height: 100vh;
+        padding: 16px;
+        background: #f1f5f9;
+        font-family: 'Inter', -apple-system, sans-serif;
+    }
+
+    .porter-header {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 14px 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+        margin-bottom: 16px;
+    }
+
+    .brand-title {
+        font-family: 'Outfit', -apple-system, sans-serif;
+        font-weight: 800;
+        font-size: 1.15rem;
+        color: #0052cc;
+        text-transform: uppercase;
+    }
+
+    .welcome-banner {
+        background: linear-gradient(135deg, #0052cc 0%, #0066ff 100%);
+        color: #ffffff;
+        border-radius: 10px;
+        padding: 14px 20px;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 12px rgba(0, 102, 255, 0.15);
+    }
+
+    .porter-glass-panel {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 18px;
+        margin-bottom: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .card-title-sm {
+        font-family: 'Outfit', -apple-system, sans-serif;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #0066ff;
+        margin-bottom: 14px;
+        text-transform: uppercase;
+        border-bottom: 1px solid #f1f5f9;
+        padding-bottom: 8px;
+    }
+
+    .form-control-xs, .form-select-xs {
+        height: 40px;
+        font-size: 0.85rem;
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+    }
+
+    .bg-yellow-input {
+        background-color: #fefce8 !important;
+        font-weight: 700;
+        border: 1px solid #fde047 !important;
+    }
+
+    .input-locked {
+        background-color: #f1f5f9 !important;
+        color: #64748b !important;
+        cursor: not-allowed !important;
+        border: 1px solid #cbd5e1 !important;
+    }
+
+    table.acc-table {
+        width: 100%;
+        font-size: 0.85rem;
+        border-collapse: collapse;
+    }
+
+    table.acc-table th {
+        background: #0f172a;
+        color: #ffffff;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        padding: 10px 14px;
+    }
+
+    table.acc-table td {
+        padding: 8px 12px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .btn-logout {
+        background: #ef4444;
+        color: #ffffff;
+        font-weight: 700;
+        border-radius: 8px;
+        padding: 6px 14px;
+        text-decoration: none;
+        border: none;
+        transition: background 0.15s ease;
+    }
+
+    .btn-logout:hover {
+        background: #dc2626;
+        color: #ffffff;
+    }
+</style>
+
+<div class="porter-fullscreen-wrapper">
+    
+    <!-- Top Header with Logout -->
+    <div class="porter-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <span class="fs-4 text-primary"><i class="fa-solid fa-truck-ramp-box"></i></span>
+            <div>
+                <h6 class="brand-title m-0">Gakuri Dairy Field Dashboard</h6>
+                <small class="text-muted">Direct SQLite Data Entry Module (gakuri_dairy.db)</small>
+            </div>
+        </div>
+        
+        <div class="d-flex align-items-center gap-3">
+            <a href="/logout" class="btn-logout d-flex align-items-center gap-2 shadow-sm">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <!-- Personalized Porter Welcome Banner -->
+    <div class="welcome-banner d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h5 class="fw-bold m-0"><i class="fa-solid fa-hand-wave me-2"></i>Welcome, {{ session.get('username', 'Porter Profile') }}!</h5>
+            <small class="opacity-75">Logged in as Active Field Porter | Access restricted strictly to your assigned farmers.</small>
+        </div>
+        <div>
+            <span class="badge bg-white text-primary fw-bold px-3 py-2 fs-6">Porter ID: {{ session.get('porter_id', 'P-FIELD') }}</span>
+        </div>
+    </div>
+
+    <!-- Filter & Date Controls -->
+    <div class="porter-glass-panel">
+        <div class="row g-2 align-items-center">
+            <div class="col-12 col-md-5">
+                <label class="fw-bold mb-1 text-dark">Active Account:</label>
+                <select id="acc_porter_select" class="form-select form-select-xs fw-semibold" disabled>
+                    {% for p in porters %}
+                        <option value="{{ p.porter_id or p.id }}" data-db-id="{{ p.id }}" data-porter-code="{{ p.porter_id }}" selected>{{ p.porter_id or p.id }} - {{ p.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-12 col-sm-6 col-md-4">
+                <label class="fw-bold mb-1 text-dark">Collection Date *:</label>
+                <input type="date" id="acc_collection_date" class="form-control form-control-xs fw-semibold" onchange="loadIntakeGrid()">
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+                <label class="d-none d-md-block mb-1">&nbsp;</label>
+                <button class="btn btn-primary rounded-pill w-100 fw-bold py-2 shadow-sm" onclick="loadIntakeGrid()">
+                    <i class="fa-solid fa-arrows-rotate me-1"></i> Refresh Grid
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Farmer Collection Entry Grid -->
+    <div class="porter-glass-panel">
+        <div class="card-title-sm d-flex justify-content-between align-items-center">
+            <span><i class="fa-solid fa-list-check me-2"></i>Your Assigned Farmers (Milk Collection)</span>
+            <span id="lock_status_badge" class="badge bg-success">Status: Editable</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table acc-table align-middle">
+                <thead>
+                    <tr>
+                        <th>Cust ID</th>
+                        <th>Farmer Name</th>
+                        <th>Phone</th>
+                        <th>Collection Point</th>
+                        <th class="text-center">Morning Vol (L)</th>
+                        <th class="text-center">Afternoon Vol (L)</th>
+                        <th class="text-center">Total Day (L)</th>
+                    </tr>
+                </thead>
+                <tbody id="intake_grid_tbody">
+                    <tr><td colspan="7" class="text-center text-muted py-4">Loading assigned farmers...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Weighbridge & Save Panel -->
+    <div class="porter-glass-panel">
+        <div class="card-title-sm">
+            <i class="fa-solid fa-weight-scale me-2"></i>Station Scale Weighbridge & Submission
+        </div>
+        <div class="row g-2 align-items-center">
+            <div class="col-12 col-sm-6 col-md-3">
+                <label class="fw-bold mb-1 text-dark">Porter Total Weighed (L):</label>
+                <input type="text" id="recon_porter_total" class="form-control form-control-xs bg-light fw-bold text-primary" readonly value="0.00">
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+                <label class="fw-bold mb-1 text-dark">Station Scale Weigh (L):</label>
+                <input type="number" step="0.01" id="recon_station_weighed" class="form-control form-control-xs fw-bold" value="0.00" oninput="calculateDiscrepancy()">
+            </div>
+            <div class="col-12 col-sm-8 col-md-4">
+                <label class="fw-bold mb-1 text-dark">Variance Result:</label>
+                <input type="text" id="recon_variance_result" class="form-control form-control-xs bg-light fw-bold" readonly value="0.00 L (Balanced)">
+            </div>
+            <div class="col-12 col-sm-4 col-md-2">
+                <label class="d-none d-md-block mb-1">&nbsp;</label>
+                <button id="btn_save_db" class="btn btn-success rounded-pill w-100 fw-bold py-2 shadow-sm" onclick="saveIntakeSessionToDatabase()">
+                    <i class="fa-solid fa-floppy-disk me-1"></i> Save to DB
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const portersList = {{ porters|tojson|safe }};
+    const customersList = {{ customers|tojson|safe }};
+    let intakeRecords = {{ intakes|tojson|safe }};
+    
+    document.getElementById('acc_collection_date').value = new Date().toISOString().split('T')[0];
+
+    function getActivePorterIdInfo() {
+        const select = document.getElementById('acc_porter_select');
+        if (!select || !select.options[select.selectedIndex]) {
+            return { val: "", dbId: "", code: "" };
+        }
+        const opt = select.options[select.selectedIndex];
+        return {
+            val: (select.value || "").toString(),
+            dbId: (opt.getAttribute('data-db-id') || "").toString(),
+            code: (opt.getAttribute('data-porter-code') || "").toString()
+        };
+    }
+
+    /* UPDATED: COMPREHENSIVE IDENTIFIER MATCHING FOR PORTER DASHBOARD */
+    function loadIntakeGrid() {
+        const porterInfo = getActivePorterIdInfo();
+        const colDate = document.getElementById('acc_collection_date').value;
+        const tbody = document.getElementById('intake_grid_tbody');
+        tbody.innerHTML = "";
+
+        if (!porterInfo.val && !porterInfo.dbId && !porterInfo.code) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No porter account selected.</td></tr>';
+            return;
+        }
+
+        // Filters farmers matching either primary ID (e.g. 21) or custom code (e.g. P003)
+        const assignedCustomers = customersList.filter(c => {
+            const assigned = (c.assigned_porter_id || c.porter_id || '').toString();
+            return assigned !== '' && (
+                assigned === porterInfo.val || 
+                assigned === porterInfo.dbId || 
+                assigned === porterInfo.code
+            );
+        });
+
+        if (assignedCustomers.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No farmers assigned to your account in database.</td></tr>';
+            document.getElementById('recon_porter_total').value = "0.00";
+            return;
+        }
+
+        let porterTotalVol = 0;
+        let isAlreadySaved = false;
+
+        assignedCustomers.forEach(c => {
+            const custIdStr = (c.id || '').toString();
+            const custName = c.full_name || c.name || 'Unknown';
+            
+            const existingRecord = intakeRecords.find(r => {
+                const recCust = (r.customer_id || '').toString();
+                const recPorter = (r.porter_id || '').toString();
+                const matchPorter = recPorter === porterInfo.val || recPorter === porterInfo.dbId || recPorter === porterInfo.code;
+                return recCust === custIdStr && matchPorter && r.collection_date === colDate;
+            });
+
+            if (existingRecord) {
+                isAlreadySaved = true;
+            }
+
+            const mVol = existingRecord ? (parseFloat(existingRecord.morning_vol) || 0) : 0;
+            const aVol = existingRecord ? (parseFloat(existingRecord.afternoon_vol) || 0) : 0;
+            const rowTotal = mVol + aVol;
+            porterTotalVol += rowTotal;
+
+            const disabledAttr = isAlreadySaved ? "disabled readonly" : "";
+            const inputClass = isAlreadySaved ? "form-control-xs text-center input-locked morning-input" : "form-control-xs text-center bg-yellow-input morning-input";
+            const aftClass = isAlreadySaved ? "form-control-xs text-center input-locked afternoon-input" : "form-control-xs text-center bg-yellow-input afternoon-input";
+
+            tbody.innerHTML += `
+                <tr data-cust-id="${custIdStr}">
+                    <td><span class="badge bg-secondary font-monospace">${custIdStr}</span></td>
+                    <td class="fw-semibold text-dark">${custName}</td>
+                    <td class="text-muted">${c.phone || '-'}</td>
+                    <td><span class="badge bg-light text-dark border">${c.collection_point || 'Default'}</span></td>
+                    <td class="text-center">
+                        <input type="number" step="0.1" class="form-control ${inputClass}" value="${mVol || ''}" placeholder="0.0" ${disabledAttr} oninput="recalcRowTotal(this)">
+                    </td>
+                    <td class="text-center">
+                        <input type="number" step="0.1" class="form-control ${aftClass}" value="${aVol || ''}" placeholder="0.0" ${disabledAttr} oninput="recalcRowTotal(this)">
+                    </td>
+                    <td class="text-center fw-bold text-primary font-monospace row-total-cell">${rowTotal.toFixed(1)} L</td>
+                </tr>
+            `;
+        });
+
+        document.getElementById('recon_porter_total').value = porterTotalVol.toFixed(2);
+        
+        const saveBtn = document.getElementById('btn_save_db');
+        const lockBadge = document.getElementById('lock_status_badge');
+        const stationInput = document.getElementById('recon_station_weighed');
+
+        if (isAlreadySaved) {
+            saveBtn.disabled = true;
+            saveBtn.className = "btn btn-secondary rounded-pill w-100 fw-bold py-2 shadow-sm";
+            saveBtn.innerHTML = '<i class="fa-solid fa-lock me-1"></i> Locked (Saved)';
+            lockBadge.className = "badge bg-danger";
+            lockBadge.innerText = "Status: Locked & Saved (No Edits Allowed)";
+            stationInput.disabled = true;
+            stationInput.classList.add('input-locked');
+        } else {
+            saveBtn.disabled = false;
+            saveBtn.className = "btn btn-success rounded-pill w-100 fw-bold py-2 shadow-sm";
+            saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> Save to DB';
+            lockBadge.className = "badge bg-success";
+            lockBadge.innerText = "Status: Editable";
+            stationInput.disabled = false;
+            stationInput.classList.remove('input-locked');
+        }
+
+        calculateDiscrepancy();
+    }
+
+    function recalcRowTotal(inputElem) {
+        const tr = inputElem.closest('tr');
+        const mVal = parseFloat(tr.querySelector('.morning-input').value) || 0;
+        const aVal = parseFloat(tr.querySelector('.afternoon-input').value) || 0;
+        const total = mVal + aVal;
+        
+        tr.querySelector('.row-total-cell').innerText = total.toFixed(1) + " L";
+
+        let sum = 0;
+        document.querySelectorAll('#intake_grid_tbody tr').forEach(row => {
+            const m = parseFloat(row.querySelector('.morning-input')?.value) || 0;
+            const a = parseFloat(row.querySelector('.afternoon-input')?.value) || 0;
+            sum += (m + a);
+        });
+
+        document.getElementById('recon_porter_total').value = sum.toFixed(2);
+        calculateDiscrepancy();
+    }
+
+    function calculateDiscrepancy() {
+        const porterTotal = parseFloat(document.getElementById('recon_porter_total').value) || 0;
+        const stationWeighed = parseFloat(document.getElementById('recon_station_weighed').value) || 0;
+        const variance = porterTotal - stationWeighed;
+
+        const resElem = document.getElementById('recon_variance_result');
+        if (variance > 0) {
+            resElem.value = `+${variance.toFixed(2)} L (GAIN)`;
+            resElem.style.color = "#16a34a";
+        } else if (variance < 0) {
+            resElem.value = `${variance.toFixed(2)} L (LOSS)`;
+            resElem.style.color = "#dc2626";
+        } else {
+            resElem.value = `0.00 L (Balanced)`;
+            resElem.style.color = "#0066ff";
+        }
+    }
+
+    async function saveIntakeSessionToDatabase() {
+        const porterInfo = getActivePorterIdInfo();
+        const colDate = document.getElementById('acc_collection_date').value;
+        const stationWeighed = parseFloat(document.getElementById('recon_station_weighed').value) || 0;
+
+        const targetPorterId = porterInfo.code || porterInfo.dbId || porterInfo.val;
+
+        if (!targetPorterId || !colDate) {
+            alert("Missing required porter or collection date.");
+            return;
+        }
+
+        const rows = document.querySelectorAll('#intake_grid_tbody tr');
+        if (rows.length === 0) return;
+
+        const recordsPayload = [];
+        rows.forEach(row => {
+            const custId = row.getAttribute('data-cust-id');
+            const mVol = parseFloat(row.querySelector('.morning-input').value) || 0;
+            const aVol = parseFloat(row.querySelector('.afternoon-input').value) || 0;
+
+            if (custId) {
+                recordsPayload.push({
+                    customer_id: custId,
+                    morning_vol: mVol,
+                    afternoon_vol: aVol
+                });
+            }
+        });
+
+        try {
+            const response = await fetch('/save_intake_batch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    porter_id: targetPorterId,
+                    collection_date: colDate,
+                    station_weighed: stationWeighed,
+                    records: recordsPayload
+                })
+            });
+
+            if (response.ok) {
+                alert("Milk collection saved and locked successfully in gakuri_dairy.db!");
+                window.location.reload();
+            } else {
+                const resData = await response.json();
+                alert("Database Error: " + resData.message);
+            }
+        } catch (err) {
+            console.error("Network Error:", err);
+            alert("Failed to communicate with app.py server.");
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", loadIntakeGrid);
+</script>
+{% endblock %}

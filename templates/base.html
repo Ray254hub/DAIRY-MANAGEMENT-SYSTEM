@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>GAKURI DAIRY MANAGEMENT SYSTEM v1.0</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js for Visual Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS (xlsx) for clean Client-side Excel Export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.92);
+            --glass-border: rgba(226, 232, 240, 0.8);
+            --glass-shadow: 0 4px 16px 0 rgba(15, 23, 42, 0.06);
+            --primary-blue: #0066ff;
+            --accent-cyan: #00c3ff;
+            --text-dark: #0f172a;
+        }
+
+        /* FAST MOBILE SCROLLING & ACCELERATION */
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f1f5f9;
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 40%, #f1f5f9 100%);
+            min-height: 100vh;
+            color: var(--text-dark);
+            touch-action: manipulation;
+        }
+
+        /* LIGHTWEIGHT CARD STYLING */
+        .glass-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: var(--glass-shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .glass-card-hover {
+            cursor: pointer;
+        }
+        @media (hover: hover) {
+            .glass-card-hover:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 10px 24px rgba(0, 102, 255, 0.12);
+            }
+        }
+
+        /* LIGHTWEIGHT BORDER HIGHLIGHT */
+        .glow-border {
+            border-left: 4px solid var(--primary-blue);
+        }
+
+        /* TOP NAV BAR */
+        .top-navbar {
+            background: rgba(255, 255, 255, 0.96);
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+        }
+
+        /* BRAND LOGO STYLING */
+        .brand-logo-img {
+            height: 40px;
+            width: 40px;
+            min-width: 40px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 2px solid #0066ff;
+            flex-shrink: 0;
+            display: block;
+        }
+
+        /* RESPONSIVE BRAND TITLE */
+        .brand-title-3d {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.15rem;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, #0044cc 0%, #0066ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 768px) {
+            .brand-title-3d {
+                font-size: 1rem;
+                max-width: 180px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+        @media (max-width: 400px) {
+            .brand-title-3d {
+                max-width: 130px;
+            }
+        }
+
+        /* LIGHTWEIGHT ICON BOXES */
+        .icon-3d {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: #e0f2fe;
+            color: var(--primary-blue);
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .icon-3d-reports {
+            background: #e0e7ff;
+            color: #4f46e5;
+        }
+
+        .icon-3d-porter {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        /* TIME DISPLAY PILL */
+        .time-pill-3d {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #0284c7;
+        }
+
+        /* ACTION BUTTONS */
+        .btn-3d-download {
+            background: #10b981;
+            border: none;
+            color: #ffffff;
+            font-weight: 700;
+            padding: 8px 18px;
+            border-radius: 12px;
+            transition: background-color 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-3d-download:hover {
+            background: #059669;
+            color: #ffffff;
+        }
+
+        .nav-header-btn {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            color: #1e293b;
+            font-weight: 600;
+            padding: 6px 10px;
+            transition: background-color 0.2s ease;
+        }
+        .nav-header-btn:hover {
+            background: #edf2f7;
+            color: var(--primary-blue);
+        }
+
+        /* DESKTOP SIDEBAR STYLING */
+        .sidebar {
+            width: 260px;
+            min-height: calc(100vh - 60px);
+            background: #ffffff;
+            border-right: 1px solid #e2e8f0;
+            flex-shrink: 0;
+        }
+        .nav-link-custom {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            margin: 4px 10px;
+            border-radius: 10px;
+            color: #334155;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            cursor: pointer;
+        }
+        .nav-link-custom:hover {
+            background: #f1f5f9;
+            color: var(--primary-blue);
+        }
+        .nav-link-custom.active {
+            background: var(--primary-blue);
+            color: #ffffff;
+        }
+        .nav-link-custom.active .icon-3d {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+
+        /* MOBILE DRAWER (OFFCANVAS) OPTIMIZATIONS */
+        .offcanvas-start {
+            background: #ffffff !important;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.15) !important;
+            will-change: transform;
+        }
+
+        .pulse-badge {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #10b981;
+        }
+
+        .shimmer {
+            background: #f1f5f9;
+        }
+
+        /* CLEAN SCROLLBAR */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+    <!-- ================================================================= -->
+    <!-- MAIN APPLICATION LAYOUT -->
+    <!-- ================================================================= -->
+    <div id="main-app-wrapper">
+
+        <!-- TOP NAVIGATION BAR -->
+        <nav class="navbar top-navbar px-2 px-md-3 py-2">
+            <div class="container-fluid p-0 flex-nowrap align-items-center">
+                <!-- Mobile Sidebar Toggle -->
+                <button class="btn nav-header-btn d-lg-none me-2 px-2 py-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar" aria-controls="mobileSidebar" aria-label="Toggle Navigation">
+                    <i class="fa-solid fa-bars text-primary fs-5"></i>
+                </button>
+
+                <!-- Top Left Logo & Brand Title -->
+                <div class="d-flex align-items-center gap-2 me-auto min-w-0">
+                    <div class="position-relative flex-shrink-0" style="width:40px; height:40px;">
+                        <img src="/static/gakuri_dairy_2.png" 
+                             onerror="this.onerror=null; this.src='/static/gakuri_dairy.png'; this.onerror=function(){ this.style.display='none'; document.getElementById('brand-fallback-icon').style.display='flex'; };" 
+                             alt="Gakuri Dairy Society Logo" class="brand-logo-img">
+                        <div id="brand-fallback-icon" class="icon-3d align-items-center justify-content-center" style="display:none; width:40px; height:40px; border-radius:50%; background: #e0f2fe; border:2px solid #0066ff;">
+                            <i class="fa-solid fa-cow text-primary"></i>
+                        </div>
+                    </div>
+                    <span class="brand-title-3d">GAKURI DAIRY <span class="d-none d-sm-inline">MANAGEMENT SYSTEM</span> <span style="font-size: 0.75rem; opacity: 0.85;">v1.0</span></span>
+                </div>
+
+                <!-- Header Action Controls -->
+                <div class="d-flex align-items-center gap-1 gap-md-2 flex-shrink-0">
+                    
+                    <!-- Clock -->
+                    <div class="time-pill-3d d-none d-xl-flex align-items-center gap-2">
+                        <i class="fa-solid fa-clock text-primary"></i>
+                        <span id="live-clock">00:00:00 AM</span>
+                    </div>
+
+                    <!-- Notifications Dropdown -->
+                    <div class="dropdown">
+                        <button class="btn nav-header-btn position-relative px-2 py-1" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications">
+                            <span class="icon-3d" style="width:30px; height:30px; font-size:0.85rem;"><i class="fa-solid fa-bell"></i></span>
+                            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end p-2 shadow border-0 mt-2" style="width: 290px; background: #ffffff;">
+                            <li class="dropdown-header fw-bold text-dark border-bottom pb-2">System Notifications</li>
+                            <li>
+                                <a class="dropdown-item py-2 border-bottom" href="#">
+                                    <div class="fw-semibold small text-primary"><i class="fa-solid fa-circle-check me-1"></i> Shift Batch Saved</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">Batch shift recorded for Porter P002</div>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2 border-bottom" href="#">
+                                    <div class="fw-semibold small text-success"><i class="fa-solid fa-database me-1"></i> SQLite Synced</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">gakuri_dairy.db auto-backup complete</div>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2" href="#">
+                                    <div class="fw-semibold small text-warning"><i class="fa-solid fa-user-plus me-1"></i> New Customer Register</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">Customer C001 details updated</div>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- User Shield Display -->
+                    <a href="/settings" class="btn nav-header-btn d-flex align-items-center gap-2 px-2 py-1 text-decoration-none">
+                        <span class="icon-3d" style="width:30px; height:30px; font-size:0.85rem;"><i class="fa-solid fa-user-shield"></i></span>
+                        <span class="fw-bold small text-dark d-none d-md-inline">SuperAdmin</span>
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="d-flex">
+            <!-- DESKTOP SIDEBAR -->
+            <div class="sidebar d-none d-lg-block py-3">
+                <nav class="nav flex-column">
+                    <a class="nav-link-custom {{ 'active' if active_page == 'dashboard.html' or active_page == 'dashboard' or not active_page }}" href="/dashboard.html">
+                        <span class="icon-3d"><i class="fa-solid fa-chart-pie"></i></span> Manager Dashboard
+                    </a>
+                    <a class="nav-link-custom {{ 'active' if active_page == 'accountant' }}" href="/accountant">
+                        <span class="icon-3d"><i class="fa-solid fa-calculator"></i></span> Accountant Module
+                    </a>
+                    <a class="nav-link-custom {{ 'active' if active_page == 'porter_dashboard' }}" href="/porter_dashboard">
+                        <span class="icon-3d icon-3d-porter"><i class="fa-solid fa-clipboard-list"></i></span> Porter Entry Module
+                    </a>
+                    <a class="nav-link-custom {{ 'active' if active_page == 'porters' }}" href="/porters">
+                        <span class="icon-3d"><i class="fa-solid fa-truck-ramp-box"></i></span> Porters Registry
+                    </a>
+                    <a class="nav-link-custom {{ 'active' if active_page == 'customers' or active_page == 'farmers' }}" href="/customers">
+                        <span class="icon-3d"><i class="fa-solid fa-users-gear"></i></span> Customers Registry
+                    </a>
+                    <a class="nav-link-custom {{ 'active' if active_page == 'store' }}" href="/store">
+                        <span class="icon-3d"><i class="fa-solid fa-store"></i></span> Store Module
+                    </a>
+                    <a class="nav-link-custom {{ 'active' if active_page == 'board_member' }}" href="/board_member">
+                        <span class="icon-3d"><i class="fa-solid fa-user-tie"></i></span> Board Member Portal
+                    </a>
+
+                    <!-- SYSTEM REPORTS DIRECT TRIGGER -->
+                    <a class="nav-link-custom {{ 'active' if active_page == 'reports' }}" onclick="openExportModal('report')">
+                        <span class="icon-3d icon-3d-reports"><i class="fa-solid fa-file-chart-column"></i></span> System Reports
+                    </a>
+
+                    <a class="nav-link-custom {{ 'active' if active_page == 'settings' }}" href="/settings">
+                        <span class="icon-3d"><i class="fa-solid fa-gears"></i></span> Admin Settings
+                    </a>
+                </nav>
+                
+                <div class="mt-auto p-3">
+                    <div class="glass-card p-3 text-center">
+                        <div class="d-flex align-items-center justify-content-center gap-2 mb-1">
+                            <span class="pulse-badge"></span>
+                            <span class="fw-bold small text-dark">Database Synced</span>
+                        </div>
+                        <small class="text-muted d-block" style="font-size: 0.72rem;">SQLite Engine: Connected</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MOBILE DRAWER SIDEBAR -->
+            <div class="offcanvas offcanvas-start border-0" tabindex="-1" id="mobileSidebar" style="width: 280px;">
+                <div class="offcanvas-header border-bottom p-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <img src="/static/gakuri_dairy_2.png" onerror="this.onerror=null; this.src='/static/gakuri_dairy.png';" alt="Gakuri Dairy Logo" class="brand-logo-img" style="height:45px; width:45px;">
+                        <h5 class="offcanvas-title fw-bold brand-title-3d mb-0" style="font-size: 1.2rem;">GAKURI DAIRY</h5>
+                    </div>
+                    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body p-0 py-3">
+                    <nav class="nav flex-column">
+                        <a class="nav-link-custom {{ 'active' if active_page == 'dashboard.html' or active_page == 'dashboard' or not active_page }}" href="/dashboard.html"><span class="icon-3d"><i class="fa-solid fa-chart-pie"></i></span> Manager Dashboard</a>
+                        <a class="nav-link-custom {{ 'active' if active_page == 'accountant' }}" href="/accountant"><span class="icon-3d"><i class="fa-solid fa-calculator"></i></span> Accountant Module</a>
+                        <a class="nav-link-custom {{ 'active' if active_page == 'porter_dashboard' }}" href="/porter_dashboard"><span class="icon-3d icon-3d-porter"><i class="fa-solid fa-clipboard-list"></i></span> Porter Entry Module</a>
+                        <a class="nav-link-custom {{ 'active' if active_page == 'porters' }}" href="/porters"><span class="icon-3d"><i class="fa-solid fa-truck-ramp-box"></i></span> Porters Registry</a>
+                        <a class="nav-link-custom {{ 'active' if active_page == 'customers' or active_page == 'farmers' }}" href="/customers"><span class="icon-3d"><i class="fa-solid fa-users-gear"></i></span> Customers Registry</a>
+                        <a class="nav-link-custom {{ 'active' if active_page == 'store' }}" href="/store"><span class="icon-3d"><i class="fa-solid fa-store"></i></span> Store Module</a>
+                        <a class="nav-link-custom {{ 'active' if active_page == 'board_member' }}" href="/board_member"><span class="icon-3d"><i class="fa-solid fa-user-tie"></i></span> Board Member Portal</a>
+                        <a class="nav-link-custom {{ 'active' if active_page == 'reports' }}" onclick="openExportModal('report')"><span class="icon-3d icon-3d-reports"><i class="fa-solid fa-file-chart-column"></i></span> System Reports</a>
+                        <a class="nav-link-custom {{ 'active' if active_page == 'settings' }}" href="/settings"><span class="icon-3d"><i class="fa-solid fa-gears"></i></span> Admin Settings</a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- MAIN DYNAMIC CONTENT CONTAINER -->
+            <main class="flex-grow-1 p-2 p-sm-3 p-md-4 w-100" style="min-width: 0;">
+                {% block content %}
+                <div class="space-y-4">
+
+                    <!-- SYSTEM ALERTS BOX -->
+                    <div id="system-alerts-container" class="mb-3 mb-md-4">
+                        <div class="glass-card p-3 border-start border-4 border-primary d-flex align-items-center justify-content-between flex-wrap gap-2">
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="icon-3d text-primary"><i class="fa-solid fa-circle-info"></i></span>
+                                <div>
+                                    <h6 class="fw-bold mb-0 text-dark">Live Operational Monitor</h6>
+                                    <p class="small text-muted mb-0" id="alert-message-text">Connecting to SQLite database tables...</p>
+                                </div>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="this.parentElement.parentElement.remove()">Dismiss</button>
+                        </div>
+                    </div>
+
+                    <!-- TOP KPI SUMMARY CARDS (3 CARDS) -->
+                    <div class="row g-2 g-md-3 mb-3 mb-md-4">
+                        <div class="col-12 col-sm-4">
+                            <div class="glass-card glass-card-hover glow-border p-3">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <span class="text-uppercase text-muted fw-bold small" style="font-size: 0.72rem;">Today's Total Intake</span>
+                                        <h3 class="fw-bold text-dark mt-1 mb-0 fs-4 fs-md-3" id="kpi-today-intake">0.0 L</h3>
+                                    </div>
+                                    <span class="icon-3d text-primary"><i class="fa-solid fa-bottle-droplet"></i></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CLICKABLE PORTERS CARD -->
+                        <div class="col-12 col-sm-4" onclick="window.location.href='/porters'">
+                            <div class="glass-card glass-card-hover glow-border p-3">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <span class="text-uppercase text-muted fw-bold small" style="font-size: 0.72rem;">Active Porters</span>
+                                        <h3 class="fw-bold text-dark mt-1 mb-0 fs-4 fs-md-3" id="kpi-active-porters">0</h3>
+                                        <span class="badge bg-success-subtle text-success rounded-pill mt-1" style="font-size:0.68rem;">Click to View Registry &rarr;</span>
+                                    </div>
+                                    <span class="icon-3d text-success"><i class="fa-solid fa-truck-fast"></i></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CLICKABLE CUSTOMERS REGISTRY CARD -->
+                        <div class="col-12 col-sm-4" onclick="window.location.href='/customers'">
+                            <div class="glass-card glass-card-hover glow-border p-3">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <span class="text-uppercase text-muted fw-bold small" style="font-size: 0.72rem;">Active Customers</span>
+                                        <h3 class="fw-bold text-dark mt-1 mb-0 fs-4 fs-md-3" id="kpi-active-farmers">0</h3>
+                                        <span class="badge bg-info-subtle text-info rounded-pill mt-1" style="font-size:0.68rem;">Click to View Customers Registry &rarr;</span>
+                                    </div>
+                                    <span class="icon-3d text-info"><i class="fa-solid fa-people-group"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- QUICK ACTION BAR -->
+                    <div class="glass-card p-3 mb-3 mb-md-4">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                            <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                                <span class="icon-3d" style="width:28px; height:28px; font-size:0.8rem;"><i class="fa-solid fa-bolt"></i></span> Quick Actions
+                            </h6>
+                            <div class="d-flex flex-wrap gap-2 align-items-center w-100 w-sm-auto">
+                                <a href="/porter_dashboard" class="btn btn-warning btn-sm rounded-pill px-3 fw-semibold text-dark flex-grow-1 flex-sm-grow-0">+ Porter Entry</a>
+                                <a href="/accountant" class="btn btn-primary btn-sm rounded-pill px-3 fw-semibold flex-grow-1 flex-sm-grow-0">+ Record Intake</a>
+                                <a href="/customers" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-semibold flex-grow-1 flex-sm-grow-0">+ Customers Registry</a>
+                                <a href="/porters" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-semibold flex-grow-1 flex-sm-grow-0">+ Add Porter</a>
+                                <button onclick="openExportModal('pdf')" class="btn btn-dark btn-sm rounded-pill px-3 fw-semibold flex-grow-1 flex-sm-grow-0"><i class="fa-solid fa-file-pdf me-1 text-danger"></i> Export PDF</button>
+                                <button onclick="openExportModal('excel')" class="btn btn-success btn-sm rounded-pill px-3 fw-semibold flex-grow-1 flex-sm-grow-0"><i class="fa-solid fa-file-excel me-1"></i> Export Excel</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CHARTS & REAL-TIME ANALYTICS FROM DATABASE -->
+                    <div class="row g-3 mb-3 mb-md-4">
+                        <div class="col-12 col-lg-7">
+                            <div class="glass-card p-3 p-md-4 h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    <h6 class="fw-bold text-dark mb-0 fs-6">Daily Collection Trends (Morning vs. Afternoon)</h6>
+                                    <span class="badge bg-primary-subtle text-primary rounded-pill">gakuri_dairy.db</span>
+                                </div>
+                                <div style="height: 240px; position: relative;">
+                                    <canvas id="dailyTrendsChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-5">
+                            <div class="glass-card p-3 p-md-4 h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    <h6 class="fw-bold text-dark mb-0 fs-6">Top Porters by Volume</h6>
+                                    <span class="badge bg-success-subtle text-success rounded-pill">Leaderboard</span>
+                                </div>
+                                <div style="height: 240px; position: relative;">
+                                    <canvas id="topPortersChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- REAL-TIME INTAKE STREAM TABLE -->
+                    <div class="glass-card p-3 p-md-4">
+                        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                            <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2 fs-6">
+                                <span class="pulse-badge"></span> Real-Time Intake Stream & Activity Feed
+                            </h6>
+                            <a href="/accountant" class="small fw-bold text-primary text-decoration-none">View All in Accountant &rarr;</a>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr class="text-secondary small text-uppercase">
+                                        <th>Customer / Supplier</th>
+                                        <th>Porter & Route</th>
+                                        <th class="text-end">Morning (L)</th>
+                                        <th class="text-end">Afternoon (L)</th>
+                                        <th class="text-end">Total Vol (L)</th>
+                                        <th>Collection Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="activity-feed-body">
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-4 shimmer">Connecting to gakuri_dairy.db records...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+                {% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- DATE RANGE SELECTION & SYSTEM REPORTS VIEWER MODAL -->
+    <div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content glass-card p-2 p-md-3 border-0" style="background: #ffffff;">
+                <div class="modal-header border-bottom pb-2">
+                    <div>
+                        <h5 class="modal-header-title fw-bold text-dark mb-0 fs-6 fs-md-5" id="exportModalTitle">System Reports Generator</h5>
+                        <small class="text-muted" id="exportModalSubTitle">Select date range to filter and preview live database reports</small>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <div class="modal-body py-3">
+                    <input type="hidden" id="exportTypeInput" value="excel">
+                    
+                    <!-- Date Range Selection Header -->
+                    <div class="row g-2 g-md-3 align-items-end p-3 rounded-3 mb-3" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                        <div class="col-12 col-md-4">
+                            <label class="form-label fw-bold small text-dark mb-1">Start Date</label>
+                            <input type="date" class="form-control form-control-sm fw-semibold" id="exportStartDate">
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label fw-bold small text-dark mb-1">End Date</label>
+                            <input type="date" class="form-control form-control-sm fw-semibold" id="exportEndDate">
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <button type="button" class="btn btn-primary btn-sm w-100 fw-bold rounded-2 shadow-sm" onclick="generateAndPreviewReport()">
+                                <i class="fa-solid fa-magnifying-glass me-1"></i> Generate & Preview Report
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- In-Browser Report Viewer Panel -->
+                    <div id="report-view-container" class="d-none">
+                        <div class="p-2 p-md-3 bg-white rounded-3 border mb-3">
+                            <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-2 mb-3">
+                                <div>
+                                    <h5 class="fw-bold text-dark mb-0">GAKURI DAIRY SYSTEM - OPERATIONAL REPORT</h5>
+                                    <span class="badge bg-primary text-white mt-1" id="report-span-badge">Time Span: All Records</span>
+                                </div>
+                                <div class="text-end text-muted small">
+                                    <div><strong>Generated On:</strong> <span id="report-generation-time">--</span></div>
+                                    <div><strong>Format:</strong> <span id="report-format-badge" class="fw-bold text-uppercase">FULL REPORT</span></div>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered align-middle text-dark mb-0 small">
+                                    <thead class="table-dark">
+                                        <tr class="text-uppercase" style="font-size: 0.75rem;">
+                                            <th scope="col">Date</th>
+                                            <th scope="col">Porter ID</th>
+                                            <th scope="col">Porter Name</th>
+                                            <th scope="col">Customer ID</th>
+                                            <th scope="col">Customer Name</th>
+                                            <th scope="col" class="text-end">Morning (L)</th>
+                                            <th scope="col" class="text-end">Afternoon (L)</th>
+                                            <th scope="col" class="text-end">Total Vol (L)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="report-table-body">
+                                        <!-- Dynamic Table Content -->
+                                    </tbody>
+                                    <tfoot class="table-secondary fw-bold">
+                                        <tr>
+                                            <td colspan="5" class="text-uppercase text-end">Total Cumulative Volume:</td>
+                                            <td class="text-end text-primary" id="report-total-morning">0.0 L</td>
+                                            <td class="text-end text-info" id="report-total-afternoon">0.0 L</td>
+                                            <td class="text-end text-success" id="report-total-grand">0.0 L</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                
+                <div class="modal-footer border-top justify-content-between">
+                    <button type="button" class="btn btn-light btn-sm rounded-pill px-4 fw-semibold" data-bs-dismiss="modal">Close</button>
+                    
+                    <button type="button" id="btn-download-3d-trigger" class="btn-3d-download btn-sm d-none" onclick="executeReportDownload()">
+                        <i class="fa-solid fa-file-arrow-down"></i>
+                        <span>Download Full System Report</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let globalDbData = { intakes: [], porters: [], customers: [] };
+        let currentFilteredReportData = [];
+
+        let dailyTrendsChartInstance = null;
+        let topPortersChartInstance = null;
+
+        // Load dashboard data directly on load
+        document.addEventListener("DOMContentLoaded", function() {
+            fetchDashboardData();
+        });
+
+        // Helper to safely calculate item total volume
+        function getItemTotalVolume(item) {
+            if (item.quantity !== undefined && item.quantity !== null && item.quantity !== '') {
+                return parseFloat(item.quantity) || 0;
+            }
+            const morning = parseFloat(item.morning_vol || 0);
+            const afternoon = parseFloat(item.afternoon_vol || 0);
+            return morning + afternoon;
+        }
+
+        // Real-Time Clock Updates
+        function update3DClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            const clockElem = document.getElementById('live-clock');
+            if (clockElem) {
+                clockElem.innerText = dateStr + " | " + timeStr;
+            }
+        }
+        setInterval(update3DClock, 1000);
+        update3DClock();
+
+        // SYSTEM REPORTS & EXPORT MODAL OPENER
+        function openExportModal(type) {
+            document.getElementById('exportTypeInput').value = type;
+            const titleElem = document.getElementById('exportModalTitle');
+            const subTitleElem = document.getElementById('exportModalSubTitle');
+            const formatBadge = document.getElementById('report-format-badge');
+
+            if (type === 'report') {
+                titleElem.innerText = "System Reports Module";
+                subTitleElem.innerText = "Interactive real-time database collection logs & financial summaries";
+                formatBadge.innerText = "FULL REPORT";
+            } else {
+                titleElem.innerText = "System Report Generator (" + type.toUpperCase() + ")";
+                subTitleElem.innerText = "Filter date range to generate downloadable " + type.toUpperCase() + " file";
+                formatBadge.innerText = type.toUpperCase();
+            }
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            document.getElementById('exportStartDate').value = "2026-08-01";
+            document.getElementById('exportEndDate').value = todayStr;
+
+            document.getElementById('report-view-container').classList.add('d-none');
+            document.getElementById('btn-download-3d-trigger').classList.add('d-none');
+
+            const modalElement = document.getElementById('exportModal');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+            modal.show();
+            
+            generateAndPreviewReport();
+        }
+
+        function getPorterDetails(porterId, porterNameFallback) {
+            if (!porterId && !porterNameFallback) return { id: 'P-000', name: 'Unassigned' };
+            const found = (globalDbData.porters || []).find(p => p.id == porterId || p.porter_id == porterId || p.name == porterNameFallback);
+            return {
+                id: found ? (found.porter_id || found.id || porterId) : (porterId || 'P001'),
+                name: found ? (found.name || porterNameFallback) : (porterNameFallback || 'Default Porter')
+            };
+        }
+
+        function getCustomerDetails(custId, custNameFallback) {
+            if (!custId && !custNameFallback) return { id: 'C-000', name: 'General Customer' };
+            const found = (globalDbData.customers || []).find(c => c.id == custId || c.customer_id == custId || c.name == custNameFallback);
+            return {
+                id: found ? (found.customer_id || found.id || custId) : (custId || 'C001'),
+                name: found ? (found.name || custNameFallback) : (custNameFallback || 'Registered Customer')
+            };
+        }
+
+        function generateAndPreviewReport() {
+            const start = document.getElementById('exportStartDate').value;
+            const end = document.getElementById('exportEndDate').value;
+
+            const filteredIntakes = (globalDbData.intakes || []).filter(i => {
+                const date = i.collection_date || (i.created_at ? i.created_at.split(' ')[0] : '');
+                if (!start || !end) return true;
+                return date >= start && date <= end;
+            });
+
+            currentFilteredReportData = filteredIntakes.length > 0 ? filteredIntakes : (globalDbData.intakes || []);
+
+            const tbody = document.getElementById('report-table-body');
+            tbody.innerHTML = '';
+
+            let sumMorning = 0;
+            let sumAfternoon = 0;
+            let sumGrand = 0;
+
+            if (currentFilteredReportData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">No collection intake records found for selected period in gakuri_dairy.db.</td></tr>`;
+            } else {
+                currentFilteredReportData.forEach(item => {
+                    const porter = getPorterDetails(item.porter_id, item.porter_name);
+                    const customer = getCustomerDetails(item.customer_id, item.customer_name);
+                    
+                    const morning = parseFloat(item.morning_vol || 0);
+                    const afternoon = parseFloat(item.afternoon_vol || 0);
+                    const total = getItemTotalVolume(item);
+                    const colDate = item.collection_date || (item.created_at ? item.created_at.split(' ')[0] : 'N/A');
+
+                    sumMorning += morning;
+                    sumAfternoon += afternoon;
+                    sumGrand += total;
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="fw-bold">${colDate}</td>
+                        <td><span class="badge bg-secondary font-monospace">${porter.id}</span></td>
+                        <td class="fw-semibold">${porter.name}</td>
+                        <td><span class="badge bg-light text-dark border font-monospace">${customer.id}</span></td>
+                        <td>${customer.name}</td>
+                        <td class="text-end font-monospace">${morning.toFixed(1)}</td>
+                        <td class="text-end font-monospace">${afternoon.toFixed(1)}</td>
+                        <td class="text-end font-monospace fw-bold text-primary">${total.toFixed(1)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            document.getElementById('report-total-morning').innerText = sumMorning.toFixed(1) + " L";
+            document.getElementById('report-total-afternoon').innerText = sumAfternoon.toFixed(1) + " L";
+            document.getElementById('report-total-grand').innerText = sumGrand.toFixed(1) + " L";
+
+            document.getElementById('report-span-badge').innerText = `Date Span: ${start || 'Start'} to ${end || 'End'}`;
+            document.getElementById('report-generation-time').innerText = new Date().toLocaleString();
+
+            document.getElementById('report-view-container').classList.remove('d-none');
+            document.getElementById('btn-download-3d-trigger').classList.remove('d-none');
+        }
+
+        function executeReportDownload() {
+            const type = document.getElementById('exportTypeInput').value;
+            const start = document.getElementById('exportStartDate').value || 'ALL';
+            const end = document.getElementById('exportEndDate').value || 'ALL';
+
+            if (type === 'excel' || type === 'report') {
+                const dataArray = currentFilteredReportData.map(item => {
+                    const porter = getPorterDetails(item.porter_id, item.porter_name);
+                    const customer = getCustomerDetails(item.customer_id, item.customer_name);
+                    const morning = parseFloat(item.morning_vol || 0);
+                    const afternoon = parseFloat(item.afternoon_vol || 0);
+                    const total = getItemTotalVolume(item);
+
+                    return {
+                        "Collection Date": item.collection_date || (item.created_at ? item.created_at.split(' ')[0] : 'N/A'),
+                        "Porter ID": porter.id,
+                        "Porter Name": porter.name,
+                        "Customer ID": customer.id,
+                        "Customer Name": customer.name,
+                        "Morning Vol (L)": morning.toFixed(2),
+                        "Afternoon Vol (L)": afternoon.toFixed(2),
+                        "Total Vol (L)": total.toFixed(2),
+                        "Logged Timestamp": item.created_at || 'N/A'
+                    };
+                });
+
+                const worksheet = XLSX.utils.json_to_sheet(dataArray);
+                worksheet['!cols'] = [
+                    { wch: 18 }, { wch: 14 }, { wch: 24 }, { wch: 14 },
+                    { wch: 24 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 22 }
+                ];
+
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Full Operational Report");
+                XLSX.writeFile(workbook, `Gakuri_Dairy_Report_${start}_to_${end}.xlsx`);
+            } else {
+                let reportText = "=========================================================================\n";
+                reportText += "               GAKURI DAIRY MANAGEMENT SYSTEM v1.0 - FULL REPORT          \n";
+                reportText += "=========================================================================\n";
+                reportText += `Date Span: ${start} to ${end}\n`;
+                reportText += `Generated On: ${new Date().toLocaleString()}\n`;
+                reportText += `Total Records: ${currentFilteredReportData.length}\n`;
+                reportText += "-------------------------------------------------------------------------\n";
+                reportText += "DATE       | PORTER ID | PORTER NAME         | CUST ID | TOTAL VOL (L)\n";
+                reportText += "-------------------------------------------------------------------------\n";
+
+                currentFilteredReportData.forEach(item => {
+                    const porter = getPorterDetails(item.porter_id, item.porter_name);
+                    const customer = getCustomerDetails(item.customer_id, item.customer_name);
+                    const total = getItemTotalVolume(item);
+                    const colDate = item.collection_date || (item.created_at ? item.created_at.split(' ')[0] : 'N/A');
+
+                    reportText += `${colDate.padEnd(10)} | ${porter.id.padEnd(9)} | ${porter.name.padEnd(19)} | ${customer.id.padEnd(7)} | ${total.toFixed(1)} L\n`;
+                });
+                reportText += "=========================================================================\n";
+
+                const blob = new Blob([reportText], { type: 'text/plain' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `Gakuri_Dairy_Report_${start}_to_${end}.txt`;
+                link.click();
+            }
+        }
+
+        function fetchDashboardData() {
+            fetch('/api/accountant/data')
+                .then(res => res.json())
+                .then(data => {
+                    globalDbData = data || { intakes: [], porters: [], customers: [] };
+                    updateDashboardUI(globalDbData);
+                    renderRealDBCharts(globalDbData);
+                })
+                .catch(err => {
+                    console.error("Database connection error:", err);
+                    const alertText = document.getElementById('alert-message-text');
+                    if (alertText) {
+                        alertText.innerHTML = `<span class="text-danger fw-bold">Database offline or standalone mode.</span> Displaying active layout.`;
+                    }
+                });
+        }
+
+        function updateDashboardUI(data) {
+            const intakes = data.intakes || [];
+            const porters = data.porters || [];
+            const customers = data.customers || [];
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            let todayTotal = 0;
+            intakes.forEach(item => {
+                if (item.collection_date === todayStr || (item.created_at && item.created_at.startsWith(todayStr))) {
+                    todayTotal += getItemTotalVolume(item);
+                }
+            });
+
+            document.getElementById('kpi-today-intake').innerText = (todayTotal > 0 ? todayTotal.toFixed(1) : "0.0") + " L";
+            document.getElementById('kpi-active-porters').innerText = porters.length;
+            document.getElementById('kpi-active-farmers').innerText = customers.length;
+
+            const alertText = document.getElementById('alert-message-text');
+            if (alertText) {
+                alertText.innerHTML = `gakuri_dairy.db active: <span class="fw-bold text-dark">${intakes.length} intakes recorded</span> across ${porters.length} registered porters.`;
+            }
+
+            const tbody = document.getElementById('activity-feed-body');
+            if (tbody) {
+                tbody.innerHTML = '';
+                if (intakes.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No intake records currently in database.</td></tr>';
+                    return;
+                }
+
+                intakes.slice(0, 7).forEach(row => {
+                    const custName = row.customer_name || row.customer_id || 'C001';
+                    const porterName = row.porter_name || row.porter_id || 'P001';
+                    const morning = parseFloat(row.morning_vol || 0).toFixed(1);
+                    const afternoon = parseFloat(row.afternoon_vol || 0).toFixed(1);
+                    const total = getItemTotalVolume(row).toFixed(1);
+                    const colDate = row.collection_date || (row.created_at ? row.created_at.split(' ')[0] : 'Today');
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="fw-bold text-dark">${custName}</td>
+                        <td><span class="badge bg-light text-dark border">${porterName}</span></td>
+                        <td class="text-end font-monospace">${morning}</td>
+                        <td class="text-end font-monospace">${afternoon}</td>
+                        <td class="text-end font-monospace fw-bold text-primary">${total} L</td>
+                        <td class="small text-muted">${colDate}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        }
+
+        function renderRealDBCharts(data) {
+            const intakes = data.intakes || [];
+            const porters = data.porters || [];
+
+            const datesMap = {};
+            intakes.forEach(item => {
+                const date = item.collection_date || (item.created_at ? item.created_at.split(' ')[0] : 'Today');
+                if (!datesMap[date]) datesMap[date] = { morning: 0, afternoon: 0 };
+                datesMap[date].morning += parseFloat(item.morning_vol || 0);
+                datesMap[date].afternoon += parseFloat(item.afternoon_vol || 0);
+            });
+
+            const labels = Object.keys(datesMap).length > 0 ? Object.keys(datesMap) : ['No Intake Data'];
+            const morningData = Object.keys(datesMap).length > 0 ? labels.map(d => datesMap[d].morning) : [0];
+            const afternoonData = Object.keys(datesMap).length > 0 ? labels.map(d => datesMap[d].afternoon) : [0];
+
+            const trendCtx = document.getElementById('dailyTrendsChart');
+            if (trendCtx) {
+                if (dailyTrendsChartInstance) {
+                    dailyTrendsChartInstance.destroy();
+                }
+                dailyTrendsChartInstance = new Chart(trendCtx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Morning Intake (L)',
+                                data: morningData,
+                                borderColor: '#0066ff',
+                                backgroundColor: 'rgba(0, 102, 255, 0.1)',
+                                fill: true,
+                                tension: 0.2
+                            },
+                            {
+                                label: 'Afternoon Intake (L)',
+                                data: afternoonData,
+                                borderColor: '#00c3ff',
+                                backgroundColor: 'rgba(0, 195, 255, 0.05)',
+                                fill: true,
+                                tension: 0.2
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            }
+
+            const porterVolMap = {};
+            intakes.forEach(item => {
+                const porterKey = item.porter_name || item.porter_id || 'P001';
+                porterVolMap[porterKey] = (porterVolMap[porterKey] || 0) + getItemTotalVolume(item);
+            });
+
+            if (Object.keys(porterVolMap).length === 0) {
+                if (porters.length > 0) {
+                    porters.forEach(p => {
+                        porterVolMap[p.name || p.porter_id || 'Porter'] = 0;
+                    });
+                } else {
+                    porterVolMap['No Active Porters'] = 0;
+                }
+            }
+
+            const porterLabels = Object.keys(porterVolMap);
+            const porterVolumes = Object.values(porterVolMap);
+
+            const portersCtx = document.getElementById('topPortersChart');
+            if (portersCtx) {
+                if (topPortersChartInstance) {
+                    topPortersChartInstance.destroy();
+                }
+                topPortersChartInstance = new Chart(portersCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: porterLabels,
+                        datasets: [{
+                            label: 'Total Volume Collected (L)',
+                            data: porterVolumes,
+                            backgroundColor: ['#0066ff', '#10b981', '#f59e0b', '#8b5cf6'],
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
