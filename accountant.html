@@ -1,0 +1,1298 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Chart.js & SheetJS libraries -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style>
+    /* ==========================================================
+       1. HIDE BASE LAYOUT SIDEBAR & EXPAND CONTAINER
+       ========================================================== */
+    .sidebar, 
+    #sidebar, 
+    .main-sidebar, 
+    .app-sidebar, 
+    .nav-sidebar, 
+    aside,
+    [class*="sidebar"] {
+        display: none !important;
+        width: 0 !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+
+    /* Reset base main content area padding/margins */
+    .main-content, 
+    .content-wrapper, 
+    .main-wrapper, 
+    #content, 
+    main {
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin-right: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* ==========================================================
+       2. OPTIMIZED CLEAN UI & NAVIGATION COMPONENTS
+       ========================================================== */
+    .nav-header-btn {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        color: #1e293b;
+        font-weight: 600;
+        transition: background 0.15s ease, border-color 0.15s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        cursor: pointer;
+    }
+
+    .nav-header-btn:hover {
+        background: #f8fafc;
+        border-color: #0066ff;
+        color: #0066ff;
+    }
+
+    .brand-title-3d {
+        font-family: 'Outfit', -apple-system, sans-serif;
+        font-weight: 800;
+        font-size: 1.15rem;
+        letter-spacing: 0.5px;
+        color: #0052cc;
+        text-transform: uppercase;
+    }
+
+    .icon-3d {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: #eff6ff;
+        border: 1px solid #dbeafe;
+        color: #0066ff;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .glass-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .pulse-badge {
+        width: 8px;
+        height: 8px;
+        background-color: #10b981;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    /* ==========================================================
+       3. RESPONSIVE FULLSCREEN WRAPPER & PAGE LAYOUT
+       ========================================================== */
+    .accountant-fullscreen-wrapper {
+        position: relative;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: 100vh !important;
+        margin: 0 !important;
+        padding: 16px 20px !important;
+        box-sizing: border-box !important;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 0.85rem;
+        color: #0f172a;
+        background: #f1f5f9;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        z-index: 9999;
+    }
+
+    /* Fullscreen Mode State */
+    .accountant-fullscreen-wrapper:fullscreen,
+    .accountant-fullscreen-wrapper:-webkit-full-screen,
+    .accountant-fullscreen-wrapper:-ms-fullscreen,
+    .accountant-fullscreen-wrapper.js-fullscreen-active {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        margin: 0 !important;
+        padding: 16px 20px !important;
+        z-index: 999999 !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        background: #f1f5f9 !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Header Bar */
+    .accountant-header {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 12px 18px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+        margin-bottom: 16px;
+        width: 100%;
+    }
+
+    /* Cards/Panels */
+    .acc-glass-panel {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        padding: 18px;
+        margin-bottom: 16px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Navigation Tabs */
+    .acc-tabs {
+        border-bottom: none;
+        margin-bottom: 16px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .acc-tabs .nav-link {
+        color: #475569;
+        font-weight: 600;
+        font-size: 0.85rem;
+        padding: 10px 16px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        background: #ffffff;
+        transition: all 0.15s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+    }
+
+    .acc-tabs .nav-link:hover {
+        background: #f8fafc;
+        color: #0066ff;
+        border-color: #93c5fd;
+    }
+
+    .acc-tabs .nav-link.active {
+        color: #ffffff;
+        background: #0066ff;
+        border-color: #0066ff;
+        box-shadow: 0 2px 6px rgba(0, 102, 255, 0.25);
+    }
+
+    .acc-tabs .nav-link.active .icon-3d {
+        background: rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+        border-color: transparent;
+    }
+
+    .acc-pane { display: none; }
+    .acc-pane.active { display: block; }
+
+    .card-title-sm {
+        font-family: 'Outfit', -apple-system, sans-serif;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #0066ff;
+        margin-bottom: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #f1f5f9;
+        padding-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Porter Cards Grid */
+    .porter-card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 12px;
+    }
+
+    .porter-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-left: 5px solid #0066ff;
+        border-radius: 10px;
+        padding: 12px 14px;
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .porter-card:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        border-left-color: #0066ff;
+    }
+
+    .porter-card.selected {
+        background: #eff6ff;
+        border-color: #0066ff;
+        border-left: 5px solid #0066ff;
+    }
+
+    .porter-card-id {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #0066ff;
+    }
+
+    .porter-card-name {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: #0f172a;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .porter-card-route {
+        font-size: 0.75rem;
+        color: #64748b;
+    }
+
+    /* Form Inputs */
+    .form-control-xs, .form-select-xs {
+        height: 40px;
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        background: #ffffff;
+    }
+
+    .form-control-xs:focus, .form-select-xs:focus {
+        border-color: #0066ff;
+        box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.15);
+        outline: none;
+    }
+
+    .bg-yellow-input {
+        background-color: #fefce8 !important;
+        font-weight: 700;
+        color: #0f172a;
+        border: 1px solid #fde047 !important;
+    }
+
+    /* Tables */
+    .table-responsive {
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table.acc-table {
+        width: 100%;
+        margin-bottom: 0;
+        font-size: 0.85rem;
+        border-collapse: collapse;
+    }
+
+    table.acc-table th {
+        background: #0f172a;
+        color: #ffffff;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        padding: 10px 14px;
+        border: none;
+        white-space: nowrap;
+    }
+
+    table.acc-table td {
+        padding: 8px 12px;
+        vertical-align: middle;
+        border-bottom: 1px solid #e2e8f0;
+        background: #ffffff;
+    }
+
+    table.acc-table tbody tr:hover td {
+        background: #f8fafc;
+    }
+
+    /* Floating Scroll Controls */
+    .scroll-nav-btn {
+        position: fixed;
+        right: 20px;
+        z-index: 99999;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: #0066ff;
+        color: #ffffff;
+        border: 1px solid #ffffff;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 0.15s ease;
+    }
+
+    .scroll-nav-btn:hover {
+        transform: scale(1.05);
+    }
+
+    .scroll-btn-top { bottom: 75px; }
+    .scroll-btn-bottom { bottom: 25px; }
+
+    /* Footer Bar */
+    .footer-bar {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        padding: 10px 16px;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        margin-top: 16px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* ==========================================================
+       4. MOBILE RESPONSIVE OPTIMIZATIONS (< 768px)
+       ========================================================== */
+    @media (max-width: 768px) {
+        .accountant-fullscreen-wrapper {
+            padding: 10px 10px !important;
+        }
+
+        .accountant-header {
+            padding: 10px;
+            margin-bottom: 12px;
+            border-radius: 10px;
+        }
+
+        .acc-glass-panel {
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 10px;
+        }
+
+        /* Prevent auto-zoom on mobile inputs */
+        .form-control-xs, .form-select-xs {
+            font-size: 16px !important;
+            height: 42px;
+        }
+
+        /* Horizontally scrollable tabs on phone screens */
+        .acc-tabs {
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 6px;
+            margin-bottom: 12px;
+            gap: 6px;
+        }
+
+        .acc-tabs .nav-link {
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+
+        .porter-card-grid {
+            grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+            gap: 8px;
+        }
+
+        .porter-card {
+            padding: 10px;
+        }
+
+        .brand-title-3d {
+            font-size: 1rem;
+        }
+
+        .scroll-nav-btn {
+            width: 36px;
+            height: 36px;
+            right: 12px;
+        }
+
+        .scroll-btn-top { bottom: 60px; }
+        .scroll-btn-bottom { bottom: 15px; }
+        
+        table.acc-table th, table.acc-table td {
+            padding: 8px;
+        }
+    }
+</style>
+
+<div class="accountant-fullscreen-wrapper" id="accountant_fullscreen_container">
+    
+    <!-- Navigation Header -->
+    <div class="accountant-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <a href="/" class="nav-header-btn">
+                <i class="fa-solid fa-arrow-left text-primary"></i>
+                <span class="fw-bold text-dark">Main Menu</span>
+            </a>
+            <button class="nav-header-btn" onclick="toggleFullScreenMode()">
+                <span class="icon-3d" style="width:24px; height:24px; font-size:0.75rem;"><i class="fa-solid fa-expand" id="fullscreen_icon"></i></span>
+                <span class="fw-bold text-dark" id="fullscreen_btn_text">Maximize View</span>
+            </button>
+            <div class="border-start ps-2 ms-1 d-flex align-items-center gap-2">
+                <span class="icon-3d text-primary" style="width:34px; height:34px; font-size:1rem;"><i class="fa-solid fa-calculator"></i></span>
+                <div>
+                    <h6 class="brand-title-3d m-0" style="font-size: 1rem;">Accountant & Intake Engine</h6>
+                    <small class="text-muted d-block" style="font-size: 0.7rem;">Full Screen Collection & Financial Portal</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <a href="/porters" class="nav-header-btn">
+                <span class="icon-3d" style="width:24px; height:24px; font-size:0.75rem;"><i class="fa-solid fa-truck-ramp-box"></i></span>
+                <span class="fw-bold text-dark">Porters</span>
+            </a>
+            <a href="/customers" class="nav-header-btn">
+                <span class="icon-3d" style="width:24px; height:24px; font-size:0.75rem;"><i class="fa-solid fa-users-gear"></i></span>
+                <span class="fw-bold text-dark">Customers</span>
+            </a>
+            <div class="glass-card px-2 py-1 d-flex align-items-center gap-2">
+                <span class="pulse-badge"></span>
+                <span class="fw-bold text-dark" style="font-size: 0.75rem;">gakuri_dairy.db Active</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs acc-tabs">
+        <li class="nav-item">
+            <button class="nav-link active" onclick="switchAccTab(event, 'tab-intake')">
+                <span class="icon-3d" style="width:22px; height:22px; font-size:0.7rem;"><i class="fa-solid fa-pen-to-square"></i></span>
+                Daily Milk Intake
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" onclick="switchAccTab(event, 'tab-recon')">
+                <span class="icon-3d" style="width:22px; height:22px; font-size:0.7rem;"><i class="fa-solid fa-scale-balanced"></i></span>
+                Gain / Loss Recon
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" onclick="switchAccTab(event, 'tab-discrepancy')">
+                <span class="icon-3d" style="width:22px; height:22px; font-size:0.7rem;"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                Discrepancy Detector
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" onclick="switchAccTab(event, 'tab-payout')">
+                <span class="icon-3d" style="width:22px; height:22px; font-size:0.7rem;"><i class="fa-solid fa-money-bill-wave"></i></span>
+                Customer Payout Calc
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" onclick="switchAccTab(event, 'tab-analytics')">
+                <span class="icon-3d" style="width:22px; height:22px; font-size:0.7rem;"><i class="fa-solid fa-chart-line"></i></span>
+                Visual Analytics & Charts
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" onclick="switchAccTab(event, 'tab-audit')">
+                <span class="icon-3d" style="width:22px; height:22px; font-size:0.7rem;"><i class="fa-solid fa-clock-rotate-left"></i></span>
+                Intake Audit Logs
+            </button>
+        </li>
+    </ul>
+
+    <!-- TAB 1: DAILY MILK INTAKE -->
+    <div id="tab-intake" class="acc-pane active">
+        
+        <!-- Quick Porter Switcher -->
+        <div class="acc-glass-panel">
+            <div class="card-title-sm">
+                <span class="icon-3d" style="width:24px; height:24px; font-size:0.7rem;"><i class="fa-solid fa-users"></i></span>
+                Quick Porter Switcher & Daily Shift Summary
+            </div>
+            <div class="porter-card-grid" id="porter_cards_container"></div>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="acc-glass-panel">
+            <div class="row g-2 align-items-center">
+                <div class="col-12 col-md-5">
+                    <label class="fw-bold mb-1 text-dark">Select Collection Porter *:</label>
+                    <select id="acc_porter_select" class="form-select form-select-xs fw-semibold" onchange="onPorterSelectChange()">
+                        <option value="">-- Choose Porter --</option>
+                    </select>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                    <label class="fw-bold mb-1 text-dark">Collection Date *:</label>
+                    <input type="date" id="acc_collection_date" class="form-control form-control-xs fw-semibold" onchange="loadIntakeGrid()">
+                </div>
+                <div class="col-12 col-sm-6 col-md-3">
+                    <label class="d-none d-md-block mb-1">&nbsp;</label>
+                    <button class="btn btn-primary rounded-pill w-100 fw-bold py-2 shadow-sm d-flex align-items-center justify-content-center gap-2" onclick="loadIntakeGrid()">
+                        <i class="fa-solid fa-arrows-rotate"></i> Refresh Grid
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Milk Intake Entry Grid -->
+        <div class="acc-glass-panel">
+            <div class="card-title-sm">
+                <span class="icon-3d" style="width:24px; height:24px; font-size:0.7rem;"><i class="fa-solid fa-table-cells"></i></span>
+                Morning & Afternoon Record Grid (Auto-Calculates Total Day)
+            </div>
+            <div class="table-responsive">
+                <table class="table acc-table align-middle">
+                    <thead>
+                        <tr>
+                            <th style="min-width: 80px;">Cust ID</th>
+                            <th style="min-width: 160px;">Customer Name</th>
+                            <th style="min-width: 110px;">Phone</th>
+                            <th style="min-width: 130px;">Collection Point</th>
+                            <th style="min-width: 110px;" class="text-center">Morning Vol (L)</th>
+                            <th style="min-width: 110px;" class="text-center">Afternoon Vol (L)</th>
+                            <th style="min-width: 100px;" class="text-center">Total Day (L)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="intake_grid_tbody">
+                        <tr><td colspan="7" class="text-center text-muted py-4">Select a porter above to load assigned farmers and intake records.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Station Weighbridge & Discrepancy Bar -->
+        <div class="acc-glass-panel">
+            <div class="card-title-sm">
+                <span class="icon-3d text-primary" style="width:24px; height:24px; font-size:0.7rem;"><i class="fa-solid fa-weight-scale"></i></span>
+                Station Weighbridge & Discrepancy Auto-Sense
+            </div>
+            <div class="row g-2 align-items-center">
+                <div class="col-12 col-sm-6 col-md-3">
+                    <label class="fw-bold mb-1 text-dark">Porter Total Weigh (L):</label>
+                    <input type="text" id="recon_porter_total" class="form-control form-control-xs bg-light fw-bold text-primary" readonly value="0.00">
+                </div>
+                <div class="col-12 col-sm-6 col-md-3">
+                    <label class="fw-bold mb-1 text-dark">Actual Station Weighed (L) *:</label>
+                    <input type="number" step="0.01" id="recon_station_weighed" class="form-control form-control-xs fw-bold" value="0.00" oninput="calculateDiscrepancy()">
+                </div>
+                <div class="col-12 col-sm-8 col-md-4">
+                    <label class="fw-bold mb-1 text-dark">Auto Gain / Loss Variance:</label>
+                    <input type="text" id="recon_variance_result" class="form-control form-control-xs bg-light fw-bold" readonly value="0.00 L (Balanced)">
+                </div>
+                <div class="col-12 col-sm-4 col-md-2">
+                    <label class="d-none d-md-block mb-1">&nbsp;</label>
+                    <button class="btn btn-primary rounded-pill w-100 fw-bold py-2 shadow-sm d-flex align-items-center justify-content-center gap-2" onclick="saveIntakeSessionToDatabase()">
+                        <i class="fa-solid fa-floppy-disk"></i> Save to DB
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: GAIN / LOSS RECON -->
+    <div id="tab-recon" class="acc-pane">
+        <div class="acc-glass-panel">
+            <div class="card-title-sm">
+                <span class="icon-3d" style="width:24px; height:24px; font-size:0.7rem;"><i class="fa-solid fa-list-check"></i></span>
+                Daily Porter Scale Reconciliation Log
+            </div>
+            <div class="table-responsive">
+                <table class="table acc-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Porter ID</th>
+                            <th>Porter Name</th>
+                            <th>Porter Sum (L)</th>
+                            <th>Station Reading (L)</th>
+                            <th>Variance (L)</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recon_log_tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: DISCREPANCY DETECTOR -->
+    <div id="tab-discrepancy" class="acc-pane">
+        <div class="acc-glass-panel">
+            <div class="card-title-sm text-danger">
+                <span class="icon-3d text-danger" style="width:24px; height:24px; font-size:0.7rem;"><i class="fa-solid fa-shield-cat"></i></span>
+                High Variance Risk Analysis
+            </div>
+            <div class="table-responsive">
+                <table class="table acc-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Porter ID</th>
+                            <th>Porter Name</th>
+                            <th>Total Shifts</th>
+                            <th>Loss Incidents</th>
+                            <th>Total Loss (L)</th>
+                            <th>Risk Assessment</th>
+                        </tr>
+                    </thead>
+                    <tbody id="risk_log_tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 4: PAYOUT CALC -->
+    <div id="tab-payout" class="acc-pane">
+        <div class="acc-glass-panel">
+            <div class="row g-2 align-items-center mb-3">
+                <div class="col-12 col-md-4">
+                    <label class="fw-bold mb-1 text-dark">Default Price Per Litre (KES):</label>
+                    <input type="number" id="payout_rate" class="form-control form-control-xs fw-bold" value="50" oninput="renderPayoutTable()">
+                </div>
+                <div class="col-12 col-md-8 text-md-end">
+                    <span class="fw-bold text-success fs-5" id="payout_total_summary">Total Payout: KES 0.00</span>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table acc-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Cust ID</th>
+                            <th>Customer Name</th>
+                            <th>Assigned Porter</th>
+                            <th>Total Volume (L)</th>
+                            <th>Rate (KES)</th>
+                            <th>Gross Payout (KES)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="payout_tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 5: ANALYTICS -->
+    <div id="tab-analytics" class="acc-pane">
+        <div class="row g-3">
+            <div class="col-12 col-md-6">
+                <div class="acc-glass-panel">
+                    <div class="card-title-sm">
+                        <span class="icon-3d" style="width:24px; height:24px; font-size:0.7rem;"><i class="fa-solid fa-chart-column"></i></span>
+                        Volume Intake per Porter
+                    </div>
+                    <div style="height: 260px; position: relative;">
+                        <canvas id="chartPorterVolume"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <div class="acc-glass-panel">
+                    <div class="card-title-sm">
+                        <span class="icon-3d" style="width:24px; height:24px; font-size:0.7rem;"><i class="fa-solid fa-chart-pie"></i></span>
+                        Morning vs Afternoon Ratio
+                    </div>
+                    <div style="height: 260px; position: relative;">
+                        <canvas id="chartSessionRatio"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 6: AUDIT LOGS -->
+    <div id="tab-audit" class="acc-pane">
+        <div class="acc-glass-panel">
+            <div class="card-title-sm">
+                <span class="icon-3d" style="width:24px; height:24px; font-size:0.7rem;"><i class="fa-solid fa-receipt"></i></span>
+                Accountant Activity & Audit Trail
+            </div>
+            <div class="table-responsive">
+                <table class="table acc-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Timestamp</th>
+                            <th>Action</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="audit_tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Bar -->
+    <div class="footer-bar d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <span class="icon-3d" style="width:22px; height:22px; font-size:0.7rem;"><i class="fa-solid fa-layer-group"></i></span>
+            <span class="fw-bold">Module: Accountant & Intake</span>
+        </div>
+        <div class="text-success fw-bold d-flex align-items-center gap-2">
+            <span class="pulse-badge"></span>
+            <span>Connected to Python app.py (gakuri_dairy.db)</span>
+        </div>
+        <div>Date: <span id="footer_date" class="fw-bold text-primary"></span></div>
+        <div>Total System Records: <b id="footer_log_count" class="badge bg-primary rounded-pill">0</b></div>
+    </div>
+
+    <!-- Floating Scroll Controls -->
+    <button class="scroll-nav-btn scroll-btn-top" onclick="scrollToTop()" title="Scroll to Top">
+        <i class="fa-solid fa-chevron-up"></i>
+    </button>
+    <button class="scroll-nav-btn scroll-btn-bottom" onclick="scrollToBottom()" title="Scroll to Bottom">
+        <i class="fa-solid fa-chevron-down"></i>
+    </button>
+
+</div>
+
+<script>
+    // Hide sidebar on load via JS DOM query as backup
+    document.addEventListener("DOMContentLoaded", function() {
+        const sidebars = document.querySelectorAll('.sidebar, #sidebar, .main-sidebar, .app-sidebar, aside');
+        sidebars.forEach(sb => {
+            sb.style.display = 'none';
+        });
+    });
+
+    // Server Data Injection from SQLite Database Context
+    const portersList = {{ porters|tojson|safe }};
+    const customersList = {{ customers|tojson|safe }};
+    let intakeRecords = {{ intakes|tojson|safe }};
+    let auditLogs = {{ audits|tojson|safe }};
+
+    let chartPorter = null;
+    let chartRatio = null;
+
+    document.getElementById('acc_collection_date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('footer_date').innerText = new Date().toISOString().split('T')[0];
+
+    /* Fullscreen Toggle Engine */
+    function toggleFullScreenMode() {
+        const elem = document.getElementById("accountant_fullscreen_container");
+        const icon = document.getElementById("fullscreen_icon");
+        const btnText = document.getElementById("fullscreen_btn_text");
+
+        const isFullscreenActive = document.fullscreenElement || 
+                                   document.webkitFullscreenElement || 
+                                   document.mozFullScreenElement || 
+                                   document.msFullscreenElement ||
+                                   elem.classList.contains("js-fullscreen-active");
+
+        if (!isFullscreenActive) {
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) {
+                elem.msRequestFullscreen();
+            } else {
+                elem.classList.add("js-fullscreen-active");
+            }
+            if (icon) icon.className = "fa-solid fa-compress";
+            if (btnText) btnText.innerText = "Exit View";
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+            elem.classList.remove("js-fullscreen-active");
+            if (icon) icon.className = "fa-solid fa-expand";
+            if (btnText) btnText.innerText = "Maximize View";
+        }
+    }
+
+    document.addEventListener("fullscreenchange", updateFullscreenUIState);
+    document.addEventListener("webkitfullscreenchange", updateFullscreenUIState);
+    document.addEventListener("mozfullscreenchange", updateFullscreenUIState);
+    document.addEventListener("MSFullscreenChange", updateFullscreenUIState);
+
+    function updateFullscreenUIState() {
+        const elem = document.getElementById("accountant_fullscreen_container");
+        const icon = document.getElementById("fullscreen_icon");
+        const btnText = document.getElementById("fullscreen_btn_text");
+        
+        const active = document.fullscreenElement || 
+                       document.webkitFullscreenElement || 
+                       document.mozFullScreenElement || 
+                       document.msFullscreenElement;
+
+        if (!active) {
+            elem.classList.remove("js-fullscreen-active");
+            if (icon) icon.className = "fa-solid fa-expand";
+            if (btnText) btnText.innerText = "Maximize View";
+        }
+    }
+
+    /* Scroll Navigation Helpers */
+    function scrollToTop() {
+        const container = document.getElementById("accountant_fullscreen_container");
+        container.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function scrollToBottom() {
+        const container = document.getElementById("accountant_fullscreen_container");
+        container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    function initPageData() {
+        renderPorterCardsAndDropdown();
+        renderReconciliationLogs();
+        renderRiskLogs();
+        renderPayoutTable();
+        renderAnalytics();
+        renderAuditLogs();
+        document.getElementById('footer_log_count').innerText = intakeRecords.length;
+    }
+
+    function getPorterKey(p) {
+        return (p.porter_id || p.id || '').toString();
+    }
+
+    function getCustomerPorterId(c) {
+        return (c.assigned_porter_id || c.porter_id || '').toString();
+    }
+
+    function renderPorterCardsAndDropdown() {
+        const cardsGrid = document.getElementById('porter_cards_container');
+        const dropdown = document.getElementById('acc_porter_select');
+
+        cardsGrid.innerHTML = "";
+        dropdown.innerHTML = '<option value="">-- Choose Porter --</option>';
+
+        if (!portersList || portersList.length === 0) {
+            cardsGrid.innerHTML = '<div class="text-muted p-1">No registered porters found in database gakuri_dairy.db.</div>';
+            return;
+        }
+
+        portersList.forEach(p => {
+            const pKey = getPorterKey(p);
+            const pName = p.name || 'Unnamed Porter';
+            const pRoute = p.route_area || 'General Route';
+
+            const option = document.createElement('option');
+            option.value = pKey;
+            option.textContent = `${pKey} - ${pName}`;
+            dropdown.appendChild(option);
+
+            const card = document.createElement('div');
+            card.className = 'porter-card';
+            card.setAttribute('data-id', pKey);
+            card.onclick = () => selectPorterCard(pKey);
+
+            card.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <div class="porter-card-id">ID: ${pKey}</div>
+                    <span class="icon-3d" style="width:20px; height:20px; font-size:0.6rem;"><i class="fa-solid fa-truck"></i></span>
+                </div>
+                <div class="porter-card-name" title="${pName}">${pName}</div>
+                <div class="porter-card-route"><i class="fa-solid fa-route me-1"></i>${pRoute}</div>
+            `;
+            cardsGrid.appendChild(card);
+        });
+    }
+
+    function selectPorterCard(porterId) {
+        document.querySelectorAll('.porter-card').forEach(c => c.classList.remove('selected'));
+        const selectedCard = document.querySelector(`.porter-card[data-id="${porterId}"]`);
+        if (selectedCard) selectedCard.classList.add('selected');
+
+        const dropdown = document.getElementById('acc_porter_select');
+        dropdown.value = porterId;
+        loadIntakeGrid();
+    }
+
+    function onPorterSelectChange() {
+        const selectedId = document.getElementById('acc_porter_select').value;
+        document.querySelectorAll('.porter-card').forEach(c => {
+            if (c.getAttribute('data-id') === selectedId.toString()) {
+                c.classList.add('selected');
+            } else {
+                c.classList.remove('selected');
+            }
+        });
+        loadIntakeGrid();
+    }
+
+    function loadIntakeGrid() {
+        const porterId = (document.getElementById('acc_porter_select').value || '').toString();
+        const colDate = document.getElementById('acc_collection_date').value;
+        const tbody = document.getElementById('intake_grid_tbody');
+        tbody.innerHTML = "";
+
+        if (!porterId) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Select a porter above to load assigned farmers.</td></tr>';
+            document.getElementById('recon_porter_total').value = "0.00";
+            calculateDiscrepancy();
+            return;
+        }
+
+        const assignedCustomers = customersList.filter(c => getCustomerPorterId(c) === porterId);
+
+        if (assignedCustomers.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No farmers assigned to this porter in SQLite database.</td></tr>';
+            document.getElementById('recon_porter_total').value = "0.00";
+            calculateDiscrepancy();
+            return;
+        }
+
+        let porterTotalVol = 0;
+
+        assignedCustomers.forEach(c => {
+            const custIdStr = (c.id || '').toString();
+            const custName = c.full_name || c.name || 'Unknown';
+            
+            const existingRecord = intakeRecords.find(r => 
+                (r.customer_id || '').toString() === custIdStr && 
+                (r.porter_id || '').toString() === porterId && 
+                r.collection_date === colDate
+            );
+
+            const mVol = existingRecord ? (parseFloat(existingRecord.morning_vol) || 0) : 0;
+            const aVol = existingRecord ? (parseFloat(existingRecord.afternoon_vol) || 0) : 0;
+            const rowTotal = mVol + aVol;
+            porterTotalVol += rowTotal;
+
+            tbody.innerHTML += `
+                <tr data-cust-id="${custIdStr}">
+                    <td><span class="badge bg-secondary font-monospace">${custIdStr}</span></td>
+                    <td class="fw-semibold text-dark">${custName}</td>
+                    <td class="text-muted">${c.phone || '-'}</td>
+                    <td><span class="badge bg-light text-dark border">${c.collection_point || 'Default'}</span></td>
+                    <td class="text-center">
+                        <input type="number" step="0.1" class="form-control form-control-xs text-center bg-yellow-input morning-input" value="${mVol || ''}" placeholder="0.0" oninput="recalcRowTotal(this)">
+                    </td>
+                    <td class="text-center">
+                        <input type="number" step="0.1" class="form-control form-control-xs text-center bg-yellow-input afternoon-input" value="${aVol || ''}" placeholder="0.0" oninput="recalcRowTotal(this)">
+                    </td>
+                    <td class="text-center fw-bold text-primary font-monospace row-total-cell">${rowTotal.toFixed(1)} L</td>
+                </tr>
+            `;
+        });
+
+        document.getElementById('recon_porter_total').value = porterTotalVol.toFixed(2);
+        
+        const savedStationRecord = intakeRecords.find(r => 
+            (r.porter_id || '').toString() === porterId && 
+            r.collection_date === colDate && 
+            r.station_weighed !== undefined && 
+            r.station_weighed !== null
+        );
+
+        if (savedStationRecord && savedStationRecord.station_weighed > 0) {
+            document.getElementById('recon_station_weighed').value = savedStationRecord.station_weighed;
+        } else {
+            document.getElementById('recon_station_weighed').value = porterTotalVol.toFixed(2);
+        }
+
+        calculateDiscrepancy();
+    }
+
+    function recalcRowTotal(inputElem) {
+        const tr = inputElem.closest('tr');
+        const mVal = parseFloat(tr.querySelector('.morning-input').value) || 0;
+        const aVal = parseFloat(tr.querySelector('.afternoon-input').value) || 0;
+        const total = mVal + aVal;
+        
+        tr.querySelector('.row-total-cell').innerText = total.toFixed(1) + " L";
+
+        let sum = 0;
+        document.querySelectorAll('#intake_grid_tbody tr').forEach(row => {
+            const m = parseFloat(row.querySelector('.morning-input')?.value) || 0;
+            const a = parseFloat(row.querySelector('.afternoon-input')?.value) || 0;
+            sum += (m + a);
+        });
+
+        document.getElementById('recon_porter_total').value = sum.toFixed(2);
+        calculateDiscrepancy();
+    }
+
+    function calculateDiscrepancy() {
+        const porterTotal = parseFloat(document.getElementById('recon_porter_total').value) || 0;
+        const stationWeighed = parseFloat(document.getElementById('recon_station_weighed').value) || 0;
+        const variance = porterTotal - stationWeighed;
+
+        const resElem = document.getElementById('recon_variance_result');
+        if (variance > 0) {
+            resElem.value = `+${variance.toFixed(2)} L (GAIN)`;
+            resElem.style.color = "#16a34a";
+        } else if (variance < 0) {
+            resElem.value = `${variance.toFixed(2)} L (LOSS)`;
+            resElem.style.color = "#dc2626";
+        } else {
+            resElem.value = `0.00 L (Balanced)`;
+            resElem.style.color = "#0066ff";
+        }
+    }
+
+    async function saveIntakeSessionToDatabase() {
+        const porterId = (document.getElementById('acc_porter_select').value || '').toString();
+        const colDate = document.getElementById('acc_collection_date').value;
+        const stationWeighed = parseFloat(document.getElementById('recon_station_weighed').value) || 0;
+
+        if (!porterId || !colDate) {
+            alert("Please select a porter and date first.");
+            return;
+        }
+
+        const rows = document.querySelectorAll('#intake_grid_tbody tr');
+        if (rows.length === 0) return;
+
+        const recordsPayload = [];
+        rows.forEach(row => {
+            const custId = row.getAttribute('data-cust-id');
+            const mVol = parseFloat(row.querySelector('.morning-input').value) || 0;
+            const aVol = parseFloat(row.querySelector('.afternoon-input').value) || 0;
+
+            if (custId) {
+                recordsPayload.push({
+                    customer_id: custId,
+                    morning_vol: mVol,
+                    afternoon_vol: aVol
+                });
+            }
+        });
+
+        try {
+            const response = await fetch('/save_intake_batch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    porter_id: porterId,
+                    collection_date: colDate,
+                    station_weighed: stationWeighed,
+                    records: recordsPayload
+                })
+            });
+
+            const resData = await response.json();
+
+            if (response.ok) {
+                alert("Saved directly to SQLite database (gakuri_dairy.db)!");
+                window.location.reload();
+            } else {
+                alert("Database Error: " + resData.message);
+            }
+        } catch (err) {
+            console.error("Network error communicating with app.py:", err);
+            alert("Failed to communicate with app.py server.");
+        }
+    }
+
+    function renderReconciliationLogs() {
+        const tbody = document.getElementById('recon_log_tbody');
+        tbody.innerHTML = "";
+
+        const grouped = {};
+        intakeRecords.forEach(i => {
+            const key = `${i.collection_date}_${i.porter_id}`;
+            if (!grouped[key]) {
+                grouped[key] = {
+                    date: i.collection_date,
+                    porter_id: i.porter_id,
+                    porter_name: i.porter_name,
+                    station: i.station_weighed || 0,
+                    porter_sum: 0
+                };
+            }
+            grouped[key].porter_sum += (parseFloat(i.morning_vol) || 0) + (parseFloat(i.afternoon_vol) || 0);
+        });
+
+        const entries = Object.values(grouped);
+        if (entries.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No reconciliation logs found in gakuri_dairy.db.</td></tr>';
+            return;
+        }
+
+        entries.forEach(e => {
+            const variance = e.porter_sum - e.station;
+
+            tbody.innerHTML += `
+                <tr>
+                    <td class="fw-bold">${e.date || '-'}</td>
+                    <td><span class="badge bg-secondary font-monospace">${e.porter_id}</span></td>
+                    <td class="fw-semibold text-dark">${e.porter_name || e.porter_id}</td>
+                    <td class="font-monospace">${e.porter_sum.toFixed(2)} L</td>
+                    <td class="font-monospace">${e.station.toFixed(2)} L</td>
+                    <td class="fw-bold font-monospace ${variance < 0 ? 'text-danger' : (variance > 0 ? 'text-success' : 'text-primary')}">${variance > 0 ? '+' : ''}${variance.toFixed(2)} L</td>
+                    <td><span class="badge ${variance > 0 ? 'bg-success' : (variance < 0 ? 'bg-danger' : 'bg-primary')} rounded-pill">${variance > 0 ? 'GAIN' : (variance < 0 ? 'LOSS' : 'BALANCED')}</span></td>
+                </tr>
+            `;
+        });
+    }
+
+    function renderRiskLogs() {
+        const tbody = document.getElementById('risk_log_tbody');
+        tbody.innerHTML = "";
+
+        if (!portersList || portersList.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No porters registered.</td></tr>';
+            return;
+        }
+
+        portersList.forEach(p => {
+            const pId = getPorterKey(p);
+            const pIntakes = intakeRecords.filter(i => (i.porter_id || '').toString() === pId);
+            const lossIncidents = pIntakes.filter(i => (parseFloat(i.morning_vol || 0) + parseFloat(i.afternoon_vol || 0) - (i.station_weighed || 0)) < 0);
+            
+            let totalLoss = 0;
+            lossIncidents.forEach(l => {
+                totalLoss += Math.abs((parseFloat(l.morning_vol || 0) + parseFloat(l.afternoon_vol || 0)) - l.station_weighed);
+            });
+
+            const riskLevel = lossIncidents.length > 2 ? '<span class="badge bg-danger rounded-pill"><i class="fa-solid fa-triangle-exclamation me-1"></i>HIGH RISK</span>' : '<span class="badge bg-success rounded-pill"><i class="fa-solid fa-circle-check me-1"></i>LOW RISK</span>';
+
+            tbody.innerHTML += `
+                <tr>
+                    <td><span class="badge bg-secondary font-monospace">${pId}</span></td>
+                    <td class="fw-semibold text-dark">${p.name}</td>
+                    <td>${pIntakes.length}</td>
+                    <td>${lossIncidents.length}</td>
+                    <td class="text-danger fw-bold font-monospace">${totalLoss.toFixed(2)} L</td>
+                    <td>${riskLevel}</td>
+                </tr>
+            `;
+        });
+    }
+
+    function renderPayoutTable() {
+        const rate = parseFloat(document.getElementById('payout_rate').value) || 0;
+        const tbody = document.getElementById('payout_tbody');
+        tbody.innerHTML = "";
+
+        let grandPayout = 0;
+
+        customersList.forEach(c => {
+            const custIdStr = (c.id || '').toString();
+            const custName = c.full_name || c.name || 'Unknown';
+
+            let cVol = 0;
+            intakeRecords.filter(i => (i.customer_id || '').toString() === custIdStr).forEach(i => {
+                cVol += (parseFloat(i.morning_vol) || 0) + (parseFloat(i.afternoon_vol) || 0);
+            });
+
+            const gross = cVol * rate;
+            grandPayout += gross;
+            const pObj = portersList.find(p => getPorterKey(p) === getCustomerPorterId(c));
+
+            tbody.innerHTML += `
+                <tr>
+                    <td><span class="badge bg-secondary font-monospace">${custIdStr}</span></td>
+                    <td class="fw-semibold text-dark">${custName}</td>
+                    <td><span class="badge bg-light text-dark border">${pObj ? pObj.name : 'Unassigned'}</span></td>
+                    <td class="fw-bold font-monospace text-dark">${cVol.toFixed(2)} L</td>
+                    <td class="font-monospace">${rate.toFixed(2)}</td>
+                    <td class="fw-bold text-primary font-monospace">KES ${gross.toLocaleString('en-KE', {minimumFractionDigits: 2})}</td>
+                </tr>
+            `;
+        });
+
+        document.getElementById('payout_total_summary').innerText = "Total Payout: KES " + grandPayout.toLocaleString('en-KE', {minimumFractionDigits: 2});
+    }
+
+    function renderAnalytics() {
+        const ctx1 = document.getElementById('chartPorterVolume').getContext('2d');
+        const porterLabels = [];
+        const porterVols = [];
+
+        portersList.forEach(p => {
+            const pId = getPorterKey(p);
+            let sum = 0;
+            intakeRecords.filter(i => (i.porter_id || '').toString() === pId).forEach(i => {
+                sum += (parseFloat(i.morning_vol) || 0) + (parseFloat(i.afternoon_vol) || 0);
+            });
+            porterLabels.push(p.name);
+            porterVols.push(sum);
+        });
+
+        if (chartPorter) chartPorter.destroy();
+        chartPorter = new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: porterLabels,
+                datasets: [{ label: 'Volume (L)', data: porterVols, backgroundColor: '#0066ff', borderRadius: 6 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        let mSum = 0, aSum = 0;
+        intakeRecords.forEach(i => {
+            mSum += parseFloat(i.morning_vol) || 0;
+            aSum += parseFloat(i.afternoon_vol) || 0;
+        });
+
+        const ctx2 = document.getElementById('chartSessionRatio').getContext('2d');
+        if (chartRatio) chartRatio.destroy();
+        chartRatio = new Chart(ctx2, {
+            type: 'pie',
+            data: {
+                labels: ['Morning', 'Afternoon'],
+                datasets: [{ data: [mSum, aSum], backgroundColor: ['#0066ff', '#00d2ff'] }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    }
+
+    function renderAuditLogs() {
+        const tbody = document.getElementById('audit_tbody');
+        tbody.innerHTML = "";
+
+        if (!auditLogs || auditLogs.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">No audit logs recorded in gakuri_dairy.db.</td></tr>';
+            return;
+        }
+
+        auditLogs.forEach(a => {
+            tbody.innerHTML += `
+                <tr>
+                    <td><span class="badge bg-dark font-monospace">#${a.id}</span></td>
+                    <td class="small text-muted">${a.created_at || '-'}</td>
+                    <td><span class="badge bg-primary rounded-pill">${a.action}</span></td>
+                    <td class="text-dark">${a.details || '-'}</td>
+                </tr>
+            `;
+        });
+    }
+
+    function switchAccTab(evt, tabId) {
+        if (evt) evt.preventDefault();
+        document.querySelectorAll('.acc-tabs .nav-link').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.acc-pane').forEach(p => p.classList.remove('active'));
+
+        if (evt && evt.currentTarget) evt.currentTarget.classList.add('active');
+        const pane = document.getElementById(tabId);
+        if (pane) pane.classList.add('active');
+    }
+
+    document.addEventListener("DOMContentLoaded", initPageData);
+</script>
+{% endblock %}

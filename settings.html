@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAIRY MANAGEMENT SYSTEM v1.0 - Admin Settings & Modules Management</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SheetJS (xlsx) for Client-side Excel Export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.78);
+            --glass-border: rgba(255, 255, 255, 0.95);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 80, 200, 0.08);
+            --primary-blue: #0066ff;
+            --primary-dark: #0044cc;
+            --accent-cyan: #00d2ff;
+            --text-dark: #0f172a;
+            --text-muted: #475569;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 35%, #dbefe8 70%, #eff6ff 100%);
+            background-attachment: fixed;
+            color: var(--text-dark);
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* TOP HEADER NAVBAR */
+        .top-navbar {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 20px rgba(0, 102, 255, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+            width: 100%;
+            padding: 0.85rem 2rem;
+        }
+
+        .brand-title-3d {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.35rem;
+            letter-spacing: 0.8px;
+            background: linear-gradient(135deg, #0044cc 0%, #0066ff 50%, #00c3ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 6px rgba(0, 102, 255, 0.2));
+            white-space: nowrap;
+            text-transform: uppercase;
+        }
+
+        .main-menu-btn {
+            background: linear-gradient(135deg, #0066ff 0%, #0044cc 100%);
+            color: #ffffff !important;
+            font-weight: 700;
+            border-radius: 12px;
+            padding: 9px 20px;
+            box-shadow: 0 4px 14px rgba(0, 102, 255, 0.3);
+            transition: all 0.25s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+        }
+        .main-menu-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 102, 255, 0.4);
+            color: #ffffff;
+        }
+
+        .time-pill-3d {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255,255,255,0.95);
+            box-shadow: inset 2px 2px 4px rgba(255,255,255,0.8), 2px 2px 8px rgba(0, 102, 255, 0.08);
+            border-radius: 30px;
+            padding: 6px 18px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #0284c7;
+            white-space: nowrap;
+        }
+
+        /* HORIZONTAL TOP MODULE NAVIGATION LINKS BAR */
+        .module-nav-bar {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.8);
+            padding: 8px 2rem;
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            white-space: nowrap;
+            width: 100%;
+        }
+
+        .module-nav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            border-radius: 12px;
+            color: #334155;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            transition: all 0.2s ease;
+        }
+        .module-nav-link:hover {
+            background: #ffffff;
+            color: var(--primary-blue);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,102,255,0.12);
+        }
+        .module-nav-link.active {
+            background: linear-gradient(135deg, #0066ff 0%, #0044cc 100%);
+            color: #ffffff;
+            border-color: transparent;
+            box-shadow: 0 4px 14px rgba(0, 102, 255, 0.28);
+        }
+
+        /* MAIN CONTENT */
+        .full-content-wrapper {
+            flex: 1;
+            width: 100%;
+            max-width: 100%;
+            padding: 2rem 2.5rem;
+        }
+
+        /* GLASS CARD */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: var(--glass-shadow);
+            width: 100%;
+        }
+
+        /* SETTINGS TAB BAR */
+        .settings-tab-bar {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            overflow-x: auto;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            white-space: nowrap;
+            width: 100%;
+        }
+        .settings-tab-btn {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            padding: 12px 22px;
+            border-radius: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.92rem;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .settings-tab-btn:hover {
+            background: #ffffff;
+            color: var(--primary-blue);
+        }
+        .settings-tab-btn.active {
+            background: linear-gradient(135deg, #0066ff 0%, #0044cc 100%);
+            color: #ffffff;
+            box-shadow: 0 6px 16px rgba(0, 102, 255, 0.25);
+            border-color: transparent;
+        }
+
+        .tab-pane { display: none; width: 100%; }
+        .tab-pane.active { display: block; animation: fadeIn 0.25s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* FLOATING UTILITY DOCK */
+        .floating-utility-dock {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 9999;
+        }
+        .floating-dock-btn {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.95);
+            color: var(--primary-blue);
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px rgba(0, 80, 200, 0.2);
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+        }
+        .floating-dock-btn:hover {
+            transform: scale(1.12);
+            background: var(--primary-blue);
+            color: #ffffff;
+            box-shadow: 0 12px 30px rgba(0, 102, 255, 0.35);
+        }
+
+        .security-gate-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.88) 0%, rgba(30, 58, 138, 0.88) 100%);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            z-index: 999999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .pulse-badge {
+            display: inline-block;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background-color: #10b981;
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: pulse-green 1.8s infinite;
+        }
+        @keyframes pulse-green {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        @media (max-width: 768px) {
+            .full-content-wrapper { padding: 1.25rem; }
+            .module-nav-bar { padding: 8px 1rem; }
+            .top-navbar { padding: 0.75rem 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+
+        <!-- FLOATING UTILITY DOCK -->
+        <div class="floating-utility-dock">
+            <button class="floating-dock-btn" onclick="scrollToTop()" title="Scroll to Top">
+                <i class="fa-solid fa-arrow-up"></i>
+            </button>
+            <button class="floating-dock-btn" onclick="scrollToBottom()" title="Scroll to Bottom">
+                <i class="fa-solid fa-arrow-down"></i>
+            </button>
+            <button class="floating-dock-btn" onclick="toggleFullScreen()" title="Toggle Screen Width">
+                <i class="fa-solid fa-expand" id="fullscreen-icon"></i>
+            </button>
+        </div>
+
+        <!-- SECURITY GATE OVERLAY -->
+        <div id="securityGateOverlay" class="security-gate-overlay">
+            <div class="glass-card p-4 p-md-5" style="max-width: 440px; width: 100%; background: rgba(255, 255, 255, 0.95);">
+                <div class="text-center mb-4">
+                    <span class="badge bg-primary-subtle text-primary fw-bold text-uppercase px-3 py-2 rounded-pill mb-2">Security Gatekeeper</span>
+                    <h3 class="fw-extrabold brand-title-3d fs-4 mb-1">DAIRY MANAGEMENT SYSTEM</h3>
+                    <p class="small text-muted mb-0">Restricted Admin Portal • Passcode Required</p>
+                </div>
+
+                <form id="gateLoginForm" onsubmit="authenticateAdmin(event)">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-dark">Admin Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="fa-solid fa-user-shield text-primary"></i></span>
+                            <input type="text" id="gate_username" class="form-control" value="admin" required>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-dark">Password Passcode</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="fa-solid fa-key text-primary"></i></span>
+                            <input type="password" id="gate_password" class="form-control" placeholder="Enter admin passcode" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold rounded-3 shadow-sm">
+                        <i class="fa-solid fa-unlock me-2"></i> Authenticate & Unlock Portal
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- TOP NAVIGATION BAR -->
+        <nav class="top-navbar">
+            <div class="d-flex align-items-center justify-content-between gap-3 w-100">
+                <div class="d-flex align-items-center gap-2">
+                    <a href="/dashboard" class="main-menu-btn" title="Return to Main Menu Dashboard">
+                        <i class="fa-solid fa-house"></i>
+                        <span>Main Menu</span>
+                    </a>
+                </div>
+
+                <div class="text-center overflow-hidden">
+                    <div class="brand-title-3d">DAIRY MANAGEMENT SYSTEM <span style="font-size: 0.75rem; opacity: 0.85;">v1.0</span></div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                    <div class="time-pill-3d d-none d-lg-flex align-items-center gap-2">
+                        <i class="fa-solid fa-clock text-primary"></i>
+                        <span id="live-clock">--:--:--</span>
+                    </div>
+
+                    <a href="/settings" class="btn btn-light border rounded-pill px-3 fw-bold d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-user-shield text-primary"></i>
+                        <span class="text-dark d-none d-md-inline">SuperAdmin</span>
+                    </a>
+
+                    <button class="btn btn-outline-danger rounded-pill px-3" title="Lock Session" onclick="lockSession()">
+                        <i class="fa-solid fa-lock"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- HORIZONTAL SYSTEM MODULES NAVIGATION BAR -->
+        <div class="module-nav-bar">
+            <a href="/dashboard" class="module-nav-link"><i class="fa-solid fa-chart-pie text-primary"></i> Dashboard</a>
+            <a href="/accountant" class="module-nav-link"><i class="fa-solid fa-calculator text-primary"></i> Accountant</a>
+            <a href="/porters" class="module-nav-link"><i class="fa-solid fa-truck-ramp-box text-primary"></i> Porters</a>
+            <a href="/customers" class="module-nav-link"><i class="fa-solid fa-users-gear text-primary"></i> Customers</a>
+            <a href="/reports" class="module-nav-link"><i class="fa-solid fa-file-chart-column text-primary"></i> Reports</a>
+            <a href="/settings" class="module-nav-link active"><i class="fa-solid fa-gears"></i> Admin Settings</a>
+            <div class="ms-auto d-flex align-items-center gap-2 px-2">
+                <span class="pulse-badge"></span>
+                <span class="fw-bold small text-muted">gakuri_dairy.db Online</span>
+            </div>
+        </div>
+
+        <!-- MAIN FULL WIDTH CONTENT AREA -->
+        <main class="full-content-wrapper">
+            
+            <div class="glass-card p-4 mb-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="icon-box" style="width: 54px; height: 54px; border-radius: 16px; background: rgba(0,102,255,0.1); display:flex; align-items:center; justify-content:center; font-size: 1.5rem; color: var(--primary-blue);">
+                        <i class="fa-solid fa-sliders"></i>
+                    </div>
+                    <div>
+                        <h3 class="fw-extrabold text-dark mb-0" style="font-family:'Outfit', sans-serif;">Executive Settings & System Control Portal</h3>
+                        <span class="text-muted small">Manage Module Accounts, Porters, M-Pesa Phone Standards, Customers, and System Parameters</span>
+                    </div>
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <a href="/dashboard" class="btn btn-outline-primary rounded-pill px-4 fw-bold"><i class="fa-solid fa-house me-1"></i> Main Menu</a>
+                </div>
+            </div>
+
+            <!-- SETTINGS TAB NAVIGATION -->
+            <div class="settings-tab-bar mb-4">
+                <button class="settings-tab-btn active" onclick="switchSettingsTab(event, 'tab-modules')">
+                    <i class="fa-solid fa-shield-halved"></i> Modules & Accounts
+                </button>
+                <button class="settings-tab-btn" onclick="switchSettingsTab(event, 'tab-porters')">
+                    <i class="fa-solid fa-truck-ramp-box"></i> Porters Control & M-Pesa
+                </button>
+                <button class="settings-tab-btn" onclick="switchSettingsTab(event, 'tab-customers')">
+                    <i class="fa-solid fa-users"></i> Customers Registry Control
+                </button>
+                <button class="settings-tab-btn" onclick="switchSettingsTab(event, 'tab-config')">
+                    <i class="fa-solid fa-sliders"></i> System Parameters
+                </button>
+                <button class="settings-tab-btn" onclick="switchSettingsTab(event, 'tab-database')">
+                    <i class="fa-solid fa-microchip"></i> Database Diagnostics
+                </button>
+            </div>
+
+            <!-- TAB 1: MODULES & ACCOUNTS MANAGEMENT -->
+            <div id="tab-modules" class="tab-pane active">
+                <div class="glass-card p-4 mb-4">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+                        <div>
+                            <h5 class="fw-bold text-dark mb-1"><i class="fa-solid fa-users-gear text-primary me-2"></i>System Modules & Accounts Control</h5>
+                            <p class="text-muted small mb-0">Create new accounts, edit passwords, or update details for any system module.</p>
+                        </div>
+                        <button class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" onclick="openUserModal()">
+                            <i class="fa-solid fa-user-plus me-2"></i> Create New Module Account
+                        </button>
+                    </div>
+
+                    <div class="table-responsive bg-white rounded-3 p-3 shadow-sm border">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-dark text-uppercase small">
+                                <tr>
+                                    <th># ID</th>
+                                    <th>Module / Feature</th>
+                                    <th>Account Username</th>
+                                    <th>Assigned Role</th>
+                                    <th>Passcode</th>
+                                    <th>Created At</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if users %}
+                                    {% for u in users %}
+                                    <tr>
+                                        <td><strong>{{ u.id }}</strong></td>
+                                        <td><span class="badge bg-primary-subtle text-primary fw-bold px-2 py-1">{{ u.module_name or 'General Module' }}</span></td>
+                                        <td><code>{{ u.username }}</code></td>
+                                        <td><span class="badge bg-secondary">{{ u.role }}</span></td>
+                                        <td><code>{{ u.password }}</code></td>
+                                        <td class="small text-muted">{{ u.created_at }}</td>
+                                        <td class="text-end">
+                                            <button class="btn btn-sm btn-outline-primary rounded-2 px-2" onclick="editUser('{{ u.id }}', '{{ u.username }}', '{{ u.password }}', '{{ u.role }}', '{{ u.module_name }}')">
+                                                <i class="fa-solid fa-pen-to-square"></i> Edit
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger rounded-2 px-2" onclick="deleteUser('{{ u.id }}')">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted py-4">No module accounts configured.</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: PORTERS CONTROL & M-PESA -->
+            <div id="tab-porters" class="tab-pane">
+                <div class="glass-card p-4 mb-4">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+                        <div>
+                            <h5 class="fw-bold text-dark mb-1"><i class="fa-solid fa-truck-ramp-box text-primary me-2"></i>Porters Database Registry & M-Pesa Settings</h5>
+                            <p class="text-muted small mb-0">View all porters created in `gakuri_dairy.db`, update names, phone numbers, M-Pesa phone, and route areas.</p>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive bg-white rounded-3 p-3 shadow-sm border">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-dark text-uppercase small">
+                                <tr>
+                                    <th>Porter ID</th>
+                                    <th>Full Name</th>
+                                    <th>Phone Number</th>
+                                    <th>M-Pesa Phone</th>
+                                    <th>Route Area</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if porters %}
+                                    {% for p in porters %}
+                                    <tr>
+                                        <td><code>{{ p.porter_id or p.id }}</code></td>
+                                        <td><strong>{{ p.name }}</strong></td>
+                                        <td>{{ p.phone or 'N/A' }}</td>
+                                        <td><span class="badge bg-success-subtle text-success fw-bold"><i class="fa-solid fa-mobile-screen-button me-1"></i> {{ p.mpesa_phone or p.phone or 'Not Set' }}</span></td>
+                                        <td>{{ p.route_area or 'General' }}</td>
+                                        <td><span class="badge bg-success">{{ p.status or 'Active' }}</span></td>
+                                        <td class="text-end">
+                                            <button class="btn btn-sm btn-outline-primary rounded-2 px-3" onclick="editPorter('{{ p.id }}', '{{ p.porter_id }}', '{{ p.name }}', '{{ p.phone }}', '{{ p.mpesa_phone }}', '{{ p.route_area }}', '{{ p.status }}')">
+                                                <i class="fa-solid fa-pen-to-square me-1"></i> Edit & M-Pesa
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted py-4">No porters found in database.</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: CUSTOMERS REGISTRY CONTROL -->
+            <div id="tab-customers" class="tab-pane">
+                <div class="glass-card p-4 mb-4">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+                        <div>
+                            <h5 class="fw-bold text-dark mb-1"><i class="fa-solid fa-users text-primary me-2"></i>Customers Database Registry</h5>
+                            <p class="text-muted small mb-0">View all customers loaded from `gakuri_dairy.db`, modify collection points, phones, and status.</p>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive bg-white rounded-3 p-3 shadow-sm border">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-dark text-uppercase small">
+                                <tr>
+                                    <th>Customer ID</th>
+                                    <th>Full Name</th>
+                                    <th>Phone Number</th>
+                                    <th>Collection Point</th>
+                                    <th>Assigned Porter</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if customers %}
+                                    {% for c in customers %}
+                                    <tr>
+                                        <td><code>{{ c.id }}</code></td>
+                                        <td><strong>{{ c.full_name }}</strong></td>
+                                        <td>{{ c.phone or 'N/A' }}</td>
+                                        <td>{{ c.collection_point or 'N/A' }}</td>
+                                        <td><span class="badge bg-info text-dark">{{ c.assigned_porter_id or 'Unassigned' }}</span></td>
+                                        <td><span class="badge bg-success">{{ c.status or 'Active' }}</span></td>
+                                        <td class="text-end">
+                                            <button class="btn btn-sm btn-outline-primary rounded-2 px-3" onclick="editCustomer('{{ c.id }}', '{{ c.full_name }}', '{{ c.phone }}', '{{ c.collection_point }}', '{{ c.assigned_porter_id }}', '{{ c.status }}')">
+                                                <i class="fa-solid fa-pen-to-square me-1"></i> Edit Details
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted py-4">No customers found in database.</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: SYSTEM PARAMETERS -->
+            <div id="tab-config" class="tab-pane">
+                <div class="glass-card p-4" style="max-width: 700px;">
+                    <h5 class="fw-bold text-dark mb-4 d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-money-bill-wave text-primary"></i> Pricing & Payment Standards
+                    </h5>
+                    <div class="mb-3 row align-items-center">
+                        <label class="col-sm-4 col-form-label fw-semibold text-dark">Buying Rate (KES / Litre):</label>
+                        <div class="col-sm-8">
+                            <input type="number" class="form-control fw-bold fs-5 text-primary" id="cfg_milk_rate" value="50.00" step="0.5">
+                        </div>
+                    </div>
+                    <div class="mb-3 row align-items-center">
+                        <label class="col-sm-4 col-form-label fw-semibold text-dark">Currency Symbol:</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control fw-bold" id="cfg_currency" value="KES">
+                        </div>
+                    </div>
+                    <div class="text-end border-top pt-3">
+                        <button class="btn btn-primary rounded-pill px-4 fw-bold" onclick="saveSystemConfig()"><i class="fa-solid fa-check me-1"></i> Save Configuration</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: DATABASE DIAGNOSTICS -->
+            <div id="tab-database" class="tab-pane">
+                <div class="glass-card p-4 mb-4">
+                    <h5 class="fw-bold text-dark mb-3">Live Table Diagnostics Counter</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-md-4">
+                            <div class="glass-card p-3 text-center">
+                                <span class="text-uppercase text-muted fw-bold small">Registered Modules</span>
+                                <h2 class="fw-extrabold text-primary mt-1 mb-0">{{ users | length if users else 0 }}</h2>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="glass-card p-3 text-center">
+                                <span class="text-uppercase text-muted fw-bold small">Registered Porters</span>
+                                <h2 class="fw-extrabold text-success mt-1 mb-0">{{ porters | length if porters else 0 }}</h2>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="glass-card p-3 text-center">
+                                <span class="text-uppercase text-muted fw-bold small">Registered Customers</span>
+                                <h2 class="fw-extrabold text-info mt-1 mb-0">{{ customers | length if customers else 0 }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODULE ACCOUNT EDIT/CREATE MODAL -->
+    <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content glass-card p-3 border-0" style="background: rgba(255,255,255,0.96);">
+                <div class="modal-header border-bottom pb-2">
+                    <h5 class="modal-title fw-bold text-dark" id="userModalTitle">Create / Edit Module Account</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="userForm" onsubmit="saveUserAccount(event)">
+                    <div class="modal-body py-3">
+                        <input type="hidden" id="user_id">
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">System Module / Portal Feature</label>
+                            <select class="form-select fw-semibold" id="user_module_name" required>
+                                <option value="Manager Dashboard">Manager Dashboard</option>
+                                <option value="Accountant Module">Accountant Module</option>
+                                <option value="Porter Entry Module">Porter Entry Module</option>
+                                <option value="Porters Registry">Porters Registry</option>
+                                <option value="Customers Registry">Customers Registry</option>
+                                <option value="Store Module">Store Module</option>
+                                <option value="Board Member Portal">Board Member Portal</option>
+                                <option value="System Reports">System Reports</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Account Username</label>
+                            <input type="text" class="form-control" id="user_username" placeholder="e.g. manager_main" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Password Passcode</label>
+                            <input type="text" class="form-control" id="user_password" placeholder="e.g. 7059" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Account Role</label>
+                            <select class="form-select" id="user_role" required>
+                                <option value="Admin">Admin</option>
+                                <option value="Manager">Manager</option>
+                                <option value="Accountant">Accountant</option>
+                                <option value="Porter">Porter</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top">
+                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold"><i class="fa-solid fa-floppy-disk me-1"></i> Save Account Details</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- PORTER EDIT MODAL -->
+    <div class="modal fade" id="porterModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content glass-card p-3 border-0" style="background: rgba(255,255,255,0.96);">
+                <div class="modal-header border-bottom pb-2">
+                    <h5 class="modal-title fw-bold text-dark"><i class="fa-solid fa-truck-ramp-box text-primary me-2"></i>Edit Porter & M-Pesa Settings</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="porterForm" onsubmit="savePorterSettings(event)">
+                    <div class="modal-body py-3">
+                        <input type="hidden" id="porter_db_id">
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Porter ID</label>
+                            <input type="text" class="form-control" id="porter_id_code" readonly>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Full Name</label>
+                            <input type="text" class="form-control" id="porter_name" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Phone Number</label>
+                            <input type="text" class="form-control" id="porter_phone">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-success"><i class="fa-solid fa-mobile-screen-button me-1"></i> M-Pesa Phone Number for Payouts</label>
+                            <input type="text" class="form-control border-success fw-bold" id="porter_mpesa_phone" placeholder="e.g. 0741352041">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Route Area</label>
+                            <input type="text" class="form-control" id="porter_route">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Status</label>
+                            <select class="form-select" id="porter_status">
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top">
+                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold"><i class="fa-solid fa-floppy-disk me-1"></i> Save Porter Settings</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUSTOMER EDIT MODAL -->
+    <div class="modal fade" id="customerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content glass-card p-3 border-0" style="background: rgba(255,255,255,0.96);">
+                <div class="modal-header border-bottom pb-2">
+                    <h5 class="modal-title fw-bold text-dark"><i class="fa-solid fa-users text-primary me-2"></i>Edit Customer Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="customerForm" onsubmit="saveCustomerSettings(event)">
+                    <div class="modal-body py-3">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Customer ID</label>
+                            <input type="text" class="form-control" id="cust_id_code" readonly>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Full Name</label>
+                            <input type="text" class="form-control" id="cust_full_name" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Phone Number</label>
+                            <input type="text" class="form-control" id="cust_phone">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Collection Point</label>
+                            <input type="text" class="form-control" id="cust_collection_point">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Assigned Porter ID</label>
+                            <input type="text" class="form-control" id="cust_assigned_porter">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Status</label>
+                            <select class="form-select" id="cust_status">
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top">
+                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold"><i class="fa-solid fa-floppy-disk me-1"></i> Save Customer Details</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function update3DClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            const clockEl = document.getElementById('live-clock');
+            if (clockEl) clockEl.innerText = `${dateStr} | ${timeStr}`;
+        }
+        setInterval(update3DClock, 1000);
+        update3DClock();
+
+        function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+        function scrollToBottom() { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }
+
+        function toggleFullScreen() {
+            const icon = document.getElementById('fullscreen-icon');
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(e => console.log(e));
+                if (icon) { icon.classList.remove('fa-expand'); icon.classList.add('fa-compress'); }
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                if (icon) { icon.classList.remove('fa-compress'); icon.classList.add('fa-expand'); }
+            }
+        }
+
+        function switchSettingsTab(evt, tabId) {
+            document.querySelectorAll('.settings-tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+
+            evt.currentTarget.classList.add('active');
+            const targetPane = document.getElementById(tabId);
+            if (targetPane) targetPane.classList.add('active');
+        }
+
+        function lockSession() {
+            const overlay = document.getElementById('securityGateOverlay');
+            if (overlay) overlay.style.display = 'flex';
+        }
+
+        function authenticateAdmin(e) {
+            e.preventDefault();
+            const overlay = document.getElementById('securityGateOverlay');
+            if (overlay) overlay.style.display = 'none';
+        }
+
+        function openUserModal() {
+            document.getElementById('user_id').value = '';
+            document.getElementById('user_username').value = '';
+            document.getElementById('user_password').value = '7059';
+            document.getElementById('user_role').value = 'Manager';
+            document.getElementById('user_module_name').value = 'Manager Dashboard';
+            document.getElementById('userModalTitle').innerText = 'Create New Module Account';
+            new bootstrap.Modal(document.getElementById('userModal')).show();
+        }
+
+        function editUser(id, username, password, role, moduleName) {
+            document.getElementById('user_id').value = id;
+            document.getElementById('user_username').value = username;
+            document.getElementById('user_password').value = password;
+            document.getElementById('user_role').value = role;
+            document.getElementById('user_module_name').value = moduleName || 'Manager Dashboard';
+            document.getElementById('userModalTitle').innerText = 'Edit Module Account Details';
+            new bootstrap.Modal(document.getElementById('userModal')).show();
+        }
+
+        async function saveUserAccount(e) {
+            e.preventDefault();
+            const payload = {
+                id: document.getElementById('user_id').value || null,
+                username: document.getElementById('user_username').value,
+                password: document.getElementById('user_password').value,
+                role: document.getElementById('user_role').value,
+                module_name: document.getElementById('user_module_name').value
+            };
+
+            const response = await fetch('/api/users/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const res = await response.json();
+            if (res.status === 'success') {
+                location.reload();
+            } else {
+                alert(res.message || 'Error saving account');
+            }
+        }
+
+        async function deleteUser(id) {
+            if (!confirm("Are you sure you want to permanently delete this module account?")) return;
+            const response = await fetch('/api/users/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id })
+            });
+            const res = await response.json();
+            if (res.status === 'success') {
+                location.reload();
+            } else {
+                alert(res.message || 'Error deleting account');
+            }
+        }
+
+        function editPorter(dbId, porterId, name, phone, mpesaPhone, routeArea, status) {
+            document.getElementById('porter_db_id').value = dbId;
+            document.getElementById('porter_id_code').value = porterId || dbId;
+            document.getElementById('porter_name').value = name;
+            document.getElementById('porter_phone').value = phone;
+            document.getElementById('porter_mpesa_phone').value = mpesaPhone || phone;
+            document.getElementById('porter_route').value = routeArea;
+            document.getElementById('porter_status').value = status || 'Active';
+            new bootstrap.Modal(document.getElementById('porterModal')).show();
+        }
+
+        async function savePorterSettings(e) {
+            e.preventDefault();
+            const payload = {
+                id: document.getElementById('porter_db_id').value,
+                porter_id: document.getElementById('porter_id_code').value,
+                name: document.getElementById('porter_name').value,
+                phone: document.getElementById('porter_phone').value,
+                mpesa_phone: document.getElementById('porter_mpesa_phone').value,
+                route_area: document.getElementById('porter_route').value,
+                status: document.getElementById('porter_status').value
+            };
+
+            const response = await fetch('/api/admin/porters/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const res = await response.json();
+            if (res.status === 'success') {
+                location.reload();
+            } else {
+                alert(res.message || 'Error saving porter settings');
+            }
+        }
+
+        function editCustomer(id, fullName, phone, collectionPoint, assignedPorter, status) {
+            document.getElementById('cust_id_code').value = id;
+            document.getElementById('cust_full_name').value = fullName;
+            document.getElementById('cust_phone').value = phone;
+            document.getElementById('cust_collection_point').value = collectionPoint;
+            document.getElementById('cust_assigned_porter').value = assignedPorter;
+            document.getElementById('cust_status').value = status || 'Active';
+            new bootstrap.Modal(document.getElementById('customerModal')).show();
+        }
+
+        async function saveCustomerSettings(e) {
+            e.preventDefault();
+            const payload = {
+                id: document.getElementById('cust_id_code').value,
+                full_name: document.getElementById('cust_full_name').value,
+                phone: document.getElementById('cust_phone').value,
+                collection_point: document.getElementById('cust_collection_point').value,
+                assigned_porter_id: document.getElementById('cust_assigned_porter').value,
+                status: document.getElementById('cust_status').value
+            };
+
+            const response = await fetch('/api/admin/customers/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const res = await response.json();
+            if (res.status === 'success') {
+                location.reload();
+            } else {
+                alert(res.message || 'Error saving customer details');
+            }
+        }
+
+        function saveSystemConfig() {
+            alert("System configurations saved successfully!");
+        }
+    </script>
+</body>
+</html>
