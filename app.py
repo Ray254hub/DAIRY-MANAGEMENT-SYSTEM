@@ -8,7 +8,13 @@ from flask import (
 
 app = Flask(__name__)
 app.secret_key = "gakuri_dairy_secret_key_2026"
-DB_FILE = "gakuri_dairy.db"
+
+# -----------------------------------------------------------------------------
+# Permanent Database Path Configuration
+# -----------------------------------------------------------------------------
+# This explicitly points to 'gakuri_dairy.db' inside your project root folder
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+DB_FILE = os.path.join(BASE_DIR, "gakuri_dairy.db")
 
 # -----------------------------------------------------------------------------
 # Database Helper & Initialization
