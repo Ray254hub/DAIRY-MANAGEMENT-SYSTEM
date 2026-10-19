@@ -1,0 +1,883 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Bootstrap 5, FontAwesome 6 & SheetJS -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style>
+    /* ==========================================================
+       1. HIDE BASE LAYOUT SIDEBAR & EXPAND CONTAINER
+       ========================================================== */
+    .sidebar, 
+    #sidebar, 
+    .main-sidebar, 
+    .app-sidebar, 
+    .nav-sidebar, 
+    aside,
+    [class*="sidebar"] {
+        display: none !important;
+        width: 0 !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+
+    .main-content, 
+    .content-wrapper, 
+    .main-wrapper, 
+    #content, 
+    main {
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* ==========================================================
+       2. OPTIMIZED HIGH-PERFORMANCE UI COMPONENTS
+       ========================================================== */
+    .nav-header-btn {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        color: #1e293b;
+        font-weight: 600;
+        transition: background 0.15s ease, border-color 0.15s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        font-size: 0.85rem;
+        cursor: pointer;
+    }
+
+    .nav-header-btn:hover {
+        background: #f8fafc;
+        border-color: #0066ff;
+        color: #0066ff;
+    }
+
+    .brand-title-3d {
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-weight: 800;
+        font-size: 1.15rem;
+        letter-spacing: 0.8px;
+        color: #0052cc;
+        text-transform: uppercase;
+    }
+
+    .icon-3d {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: #eff6ff;
+        border: 1px solid #dbeafe;
+        color: #0066ff;
+        font-size: 0.95rem;
+        flex-shrink: 0;
+    }
+
+    .glass-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    }
+
+    .pulse-badge {
+        width: 8px;
+        height: 8px;
+        background-color: #10b981;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    /* ==========================================================
+       3. RESPONSIVE CONTAINER & MOBILE OPTIMIZATIONS
+       ========================================================== */
+    .board-fullscreen-wrapper {
+        position: relative;
+        width: 100% !important;
+        min-height: 100vh !important;
+        padding: 16px !important;
+        box-sizing: border-box !important;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 0.85rem;
+        color: #0f172a;
+        background: #f1f5f9;
+        overflow-x: hidden;
+        z-index: 9999;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    @media (min-width: 768px) {
+        .board-fullscreen-wrapper {
+            padding: 24px 32px !important;
+        }
+    }
+
+    .board-header {
+        position: relative;
+        z-index: 100;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 12px 18px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        margin-bottom: 20px;
+        width: 100%;
+    }
+
+    /* Tab Navigation */
+    .board-tabs {
+        border-bottom: none;
+        margin-bottom: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .board-tabs .nav-link {
+        color: #475569;
+        font-weight: 600;
+        font-size: 0.85rem;
+        padding: 8px 16px;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        background: #ffffff;
+        transition: all 0.15s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .board-tabs .nav-link:hover {
+        background: #f8fafc;
+        color: #0066ff;
+    }
+
+    .board-tabs .nav-link.active {
+        color: #ffffff;
+        background: #0066ff;
+        border-color: #0066ff;
+    }
+
+    .board-tabs .nav-link.active .icon-3d {
+        background: rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+        border-color: transparent;
+    }
+
+    .board-pane { display: none; }
+    .board-pane.active { display: block; }
+
+    /* Touch-Friendly Form & Table Controls */
+    .form-control-glass, .form-select-glass {
+        min-height: 44px;
+        padding: 8px 14px;
+        font-size: 0.95rem;
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        background: #ffffff;
+        color: #0f172a;
+    }
+
+    .form-control-glass:focus, .form-select-glass:focus {
+        border-color: #0066ff;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.15);
+    }
+
+    .table-responsive {
+        border-radius: 10px;
+        overflow-x: auto;
+        border: 1px solid #e2e8f0;
+        width: 100%;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table.board-table {
+        width: 100%;
+        margin-bottom: 0;
+        font-size: 0.85rem;
+        border-collapse: collapse;
+    }
+
+    table.board-table th {
+        background: #0f172a;
+        color: #ffffff;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        padding: 12px 14px;
+        border: none;
+        white-space: nowrap;
+    }
+
+    table.board-table td {
+        padding: 12px 14px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        background: #ffffff;
+        white-space: nowrap;
+    }
+
+    table.board-table tbody tr:hover td {
+        background: #f8fafc;
+    }
+
+    .footer-bar {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        padding: 12px 18px;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        margin-top: 20px;
+        width: 100%;
+    }
+</style>
+
+<div class="board-fullscreen-wrapper" id="board_fullscreen_container">
+
+    <!-- Top Header Navigation -->
+    <div class="board-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            <a href="/" class="nav-header-btn">
+                <i class="fa-solid fa-arrow-left text-primary"></i>
+                <span class="fw-bold text-dark">Main Menu</span>
+            </a>
+            <button class="nav-header-btn" onclick="toggleFullScreenMode()">
+                <span class="icon-3d" style="width:26px; height:26px; font-size:0.75rem;"><i class="fa-solid fa-expand" id="fullscreen_icon"></i></span>
+                <span class="fw-bold text-dark" id="fullscreen_btn_text">Maximize View</span>
+            </button>
+            <div class="border-start ps-3 ms-1 d-flex align-items-center gap-3">
+                <span class="icon-3d text-primary" style="width:36px; height:36px; font-size:1rem;"><i class="fa-solid fa-user-tie"></i></span>
+                <div>
+                    <h6 class="brand-title-3d m-0" style="font-size: 1.1rem;">Board Members Management System</h6>
+                    <small class="text-muted d-block" style="font-size: 0.72rem;">Executive Registry & Operational Route Portal</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center flex-wrap gap-2">
+            <a href="/customers" class="nav-header-btn">
+                <span class="icon-3d" style="width:26px; height:26px; font-size:0.75rem;"><i class="fa-solid fa-users"></i></span>
+                <span class="fw-bold text-dark">Customers</span>
+            </a>
+            <a href="/porters" class="nav-header-btn">
+                <span class="icon-3d" style="width:26px; height:26px; font-size:0.75rem;"><i class="fa-solid fa-truck-ramp-box"></i></span>
+                <span class="fw-bold text-dark">Porters</span>
+            </a>
+            <a href="/accountant" class="nav-header-btn">
+                <span class="icon-3d" style="width:26px; height:26px; font-size:0.75rem;"><i class="fa-solid fa-calculator"></i></span>
+                <span class="fw-bold text-dark">Accountant</span>
+            </a>
+            <div class="glass-card px-3 py-2 d-flex align-items-center gap-2">
+                <span class="pulse-badge"></span>
+                <span class="fw-bold text-dark" style="font-size: 0.78rem;">gakuri_dairy.db Active</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs board-tabs">
+        <li class="nav-item">
+            <button class="nav-link active" onclick="switchBoardTab(event, 'tab-dashboard')">
+                <span class="icon-3d" style="width:24px; height:24px; font-size:0.75rem;"><i class="fa-solid fa-chart-pie"></i></span>
+                Dashboard
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" onclick="switchBoardTab(event, 'tab-register')">
+                <span class="icon-3d" style="width:24px; height:24px; font-size:0.75rem;"><i class="fa-solid fa-user-plus"></i></span>
+                Register Board Member
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" onclick="switchBoardTab(event, 'tab-edit')">
+                <span class="icon-3d" style="width:24px; height:24px; font-size:0.75rem;"><i class="fa-solid fa-user-pen"></i></span>
+                Edit Details
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" onclick="switchBoardTab(event, 'tab-directory')">
+                <span class="icon-3d" style="width:24px; height:24px; font-size:0.75rem;"><i class="fa-solid fa-address-book"></i></span>
+                Board Directory
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" onclick="switchBoardTab(event, 'tab-porter-assign')">
+                <span class="icon-3d" style="width:24px; height:24px; font-size:0.75rem;"><i class="fa-solid fa-truck-pickup"></i></span>
+                Porter Assignment
+            </button>
+        </li>
+    </ul>
+
+    <!-- TAB 1: DASHBOARD -->
+    <div id="tab-dashboard" class="board-pane active">
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-md-4">
+                <div class="glass-card p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-uppercase text-muted fw-bold" style="font-size: 0.72rem;">Total Board Members</span>
+                            <h2 class="fw-bold text-primary mt-1 mb-0" id="lbl_total_board">0</h2>
+                        </div>
+                        <span class="icon-3d text-primary"><i class="fa-solid fa-user-tie"></i></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="glass-card p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-uppercase text-muted fw-bold" style="font-size: 0.72rem;">Active Directors</span>
+                            <h2 class="fw-bold text-success mt-1 mb-0" id="lbl_active_board">0</h2>
+                        </div>
+                        <span class="icon-3d text-success"><i class="fa-solid fa-user-check"></i></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="glass-card p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-uppercase text-muted fw-bold" style="font-size: 0.72rem;">Assigned Porters Count</span>
+                            <h2 class="fw-bold text-warning mt-1 mb-0" id="lbl_porters_count">0</h2>
+                        </div>
+                        <span class="icon-3d text-warning"><i class="fa-solid fa-truck"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card p-3 p-md-4">
+            <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                <span class="icon-3d" style="width:26px; height:26px; font-size:0.75rem;"><i class="fa-solid fa-clock-rotate-left"></i></span>
+                Recent Board Members Registered
+            </h6>
+            <div class="table-responsive">
+                <table class="table board-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Board ID</th>
+                            <th>Full Name</th>
+                            <th>Phone Number</th>
+                            <th>ID Number</th>
+                            <th>Location / Zone</th>
+                            <th>Assigned Porter</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent_board_tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: REGISTER BOARD MEMBER -->
+    <div id="tab-register" class="board-pane">
+        <div class="glass-card p-3 p-md-4">
+            <form id="boardRegisterForm" onsubmit="saveNewBoardMember(event)">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <label class="fw-bold mb-1 text-dark">Board Member ID (Auto/Manual) *:</label>
+                        <input type="text" id="reg_board_id" class="form-control form-control-glass fw-semibold" placeholder="e.g. BM001" required>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="fw-bold mb-1 text-dark">Full Name *:</label>
+                        <input type="text" id="reg_board_name" class="form-control form-control-glass fw-semibold" required placeholder="Enter full name">
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="fw-bold mb-1 text-dark">Phone Number *:</label>
+                        <input type="text" id="reg_board_phone" class="form-control form-control-glass fw-semibold" required placeholder="07XXXXXXXX">
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="fw-bold mb-1 text-dark">National ID Number:</label>
+                        <input type="text" id="reg_board_idno" class="form-control form-control-glass fw-semibold" placeholder="Enter ID number">
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="fw-bold mb-1 text-dark">Location / Zone:</label>
+                        <input type="text" id="reg_board_location" class="form-control form-control-glass fw-semibold" placeholder="e.g. Gakuri North">
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="fw-bold mb-1 text-dark">Assign Porter:</label>
+                        <select id="reg_board_porter" class="form-select form-select-glass fw-semibold">
+                            <option value="">-- Unassigned --</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="fw-bold mb-1 text-dark">Status:</label>
+                        <select id="reg_board_status" class="form-select form-select-glass fw-semibold">
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+                    <div class="col-12 text-end mt-4">
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm">
+                            <i class="fa-solid fa-floppy-disk me-2"></i>Save Board Member
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TAB 3: EDIT DETAILS -->
+    <div id="tab-edit" class="board-pane">
+        <div class="row g-3">
+            <div class="col-12 col-lg-5">
+                <div class="glass-card p-3 p-md-4">
+                    <h6 class="fw-bold text-dark mb-3"><i class="fa-solid fa-magnifying-glass me-2 text-primary"></i>Select Member to Edit</h6>
+                    <input type="text" id="edit_search_input" class="form-control form-control-glass mb-3" placeholder="Search by name, ID or phone..." oninput="filterEditList()">
+                    <div class="list-group" id="edit_board_list" style="max-height: 350px; overflow-y: auto;"></div>
+                </div>
+            </div>
+            <div class="col-12 col-lg-7">
+                <div class="glass-card p-3 p-md-4">
+                    <h6 class="fw-bold text-dark mb-3"><i class="fa-solid fa-user-pen me-2 text-primary"></i>Edit Board Member Details</h6>
+                    <form id="editBoardForm" onsubmit="updateBoardRecord(event)">
+                        <input type="hidden" id="edit_target_id">
+                        <div class="mb-3">
+                            <label class="fw-bold mb-1">Board Member ID:</label>
+                            <input type="text" id="edit_board_id_display" class="form-control form-control-glass bg-light" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="fw-bold mb-1">Full Name:</label>
+                            <input type="text" id="edit_board_name" class="form-control form-control-glass" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="fw-bold mb-1">Phone Number:</label>
+                            <input type="text" id="edit_board_phone" class="form-control form-control-glass" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="fw-bold mb-1">National ID Number:</label>
+                            <input type="text" id="edit_board_idno" class="form-control form-control-glass">
+                        </div>
+                        <div class="mb-3">
+                            <label class="fw-bold mb-1">Location / Zone:</label>
+                            <input type="text" id="edit_board_location" class="form-control form-control-glass">
+                        </div>
+                        <div class="mb-3">
+                            <label class="fw-bold mb-1">Assigned Porter:</label>
+                            <select id="edit_board_porter" class="form-select form-select-glass"></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="fw-bold mb-1">Status:</label>
+                            <select id="edit_board_status" class="form-select form-select-glass">
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <button type="button" class="btn btn-outline-danger rounded-pill fw-bold" onclick="deleteBoardRecord()">
+                                <i class="fa-solid fa-trash me-2"></i>Delete Member
+                            </button>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm">
+                                <i class="fa-solid fa-floppy-disk me-2"></i>Update Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 4: BOARD DIRECTORY -->
+    <div id="tab-directory" class="board-pane">
+        <div class="glass-card p-3 p-md-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <input type="text" id="directory_search" class="form-control form-control-glass" style="max-width:300px;" placeholder="Search board directory..." oninput="renderDirectoryTable()">
+                <button class="btn btn-success rounded-pill fw-bold" onclick="exportDirectoryExcel()">
+                    <i class="fa-solid fa-file-excel me-2"></i>Export Excel
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table board-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Board ID</th>
+                            <th>Full Name</th>
+                            <th>Phone</th>
+                            <th>ID Number</th>
+                            <th>Location / Zone</th>
+                            <th>Porter</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="directory_tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 5: PORTER ASSIGNMENT -->
+    <div id="tab-porter-assign" class="board-pane">
+        <div class="glass-card p-3 p-md-4">
+            <h6 class="fw-bold text-dark mb-3"><i class="fa-solid fa-truck-pickup me-2 text-primary"></i>Batch Porter Re-Assignment for Directors</h6>
+            <div class="row g-3 mb-3">
+                <div class="col-12 col-md-5">
+                    <label class="fw-bold mb-1">Select Porter to Assign:</label>
+                    <select id="batch_porter_select" class="form-select form-select-glass"></select>
+                </div>
+                <div class="col-12 col-md-3 align-self-end">
+                    <button class="btn btn-primary rounded-pill w-100 fw-bold py-2" onclick="applyBatchPorterAssign()">
+                        Apply to Selected
+                    </button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table board-table align-middle">
+                    <thead>
+                        <tr>
+                            <style>
+                                input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+                            </style>
+                            <th style="width: 50px;"><input type="checkbox" id="check_all_board" onclick="toggleAllCheckboxes(this)"></th>
+                            <th>Board ID</th>
+                            <th>Board Member Name</th>
+                            <th>Current Assigned Porter</th>
+                        </tr>
+                    </thead>
+                    <tbody id="batch_assign_tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Bar -->
+    <div class="footer-bar d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <span class="icon-3d" style="width:24px; height:24px; font-size:0.75rem;"><i class="fa-solid fa-layer-group"></i></span>
+            <span class="fw-bold">Module: Board Members Registry</span>
+        </div>
+        <div class="text-success fw-bold d-flex align-items-center gap-2">
+            <span class="pulse-badge"></span>
+            <span>Connected to Python app.py (gakuri_dairy.db)</span>
+        </div>
+        <div>Date: <span id="footer_date" class="fw-bold text-primary"></span></div>
+    </div>
+</div>
+
+<script>
+    // Injected SQLite Data Context from Flask backend
+    let boardMembersList = {{ board_members|default([])|tojson|safe }};
+    let portersList = {{ porters|default([])|tojson|safe }};
+
+    document.getElementById('footer_date').innerText = new Date().toISOString().split('T')[0];
+
+    /* Fullscreen Mode Toggle Engine */
+    function toggleFullScreenMode() {
+        const elem = document.getElementById("board_fullscreen_container");
+        const icon = document.getElementById("fullscreen_icon");
+        const btnText = document.getElementById("fullscreen_btn_text");
+
+        const isFullscreenActive = document.fullscreenElement || 
+                                   document.webkitFullscreenElement || 
+                                   document.mozFullScreenElement || 
+                                   document.msFullscreenElement;
+
+        if (!isFullscreenActive) {
+            if (elem.requestFullscreen) elem.requestFullscreen();
+            else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+            else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
+            if (icon) icon.className = "fa-solid fa-compress";
+            if (btnText) btnText.innerText = "Exit View";
+        } else {
+            if (document.exitFullscreen) document.exitFullscreen();
+            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            else if (document.msExitFullscreen) document.msExitFullscreen();
+            if (icon) icon.className = "fa-solid fa-expand";
+            if (btnText) btnText.innerText = "Maximize View";
+        }
+    }
+
+    function switchBoardTab(evt, tabId) {
+        if (evt) evt.preventDefault();
+        document.querySelectorAll('.board-tabs .nav-link').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.board-pane').forEach(p => p.classList.remove('active'));
+
+        if (evt && evt.currentTarget) evt.currentTarget.classList.add('active');
+        const pane = document.getElementById(tabId);
+        if (pane) pane.classList.add('active');
+    }
+
+    function getPorterName(porterId) {
+        if (!porterId) return 'Unassigned';
+        const p = portersList.find(x => (x.id || x.porter_id || '').toString() === porterId.toString());
+        return p ? (p.name || p.full_name) : 'Unassigned';
+    }
+
+    function populatePorterDropdowns() {
+        const regSelect = document.getElementById('reg_board_porter');
+        const editSelect = document.getElementById('edit_board_porter');
+        const batchSelect = document.getElementById('batch_porter_select');
+
+        let options = '<option value="">-- Unassigned --</option>';
+        portersList.forEach(p => {
+            const pId = (p.id || p.porter_id).toString();
+            const pName = p.name || p.full_name || 'Porter';
+            options += `<option value="${pId}">${pId} - ${pName}</option>`;
+        });
+
+        regSelect.innerHTML = options;
+        editSelect.innerHTML = options;
+        batchSelect.innerHTML = options;
+    }
+
+    function renderDashboardStats() {
+        document.getElementById('lbl_total_board').innerText = boardMembersList.length;
+        document.getElementById('lbl_active_board').innerText = boardMembersList.filter(b => (b.status || 'Active') === 'Active').length;
+        document.getElementById('lbl_porters_count').innerText = portersList.length;
+
+        const tbody = document.getElementById('recent_board_tbody');
+        tbody.innerHTML = "";
+        
+        const recent = boardMembersList.slice(-10).reverse();
+        if (recent.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-3 text-muted">No Board Members in gakuri_dairy.db yet.</td></tr>`;
+            return;
+        }
+
+        recent.forEach(b => {
+            tbody.innerHTML += `
+                <tr>
+                    <td><span class="badge bg-secondary font-monospace">${b.id}</span></td>
+                    <td class="fw-semibold text-dark">${b.full_name || b.name}</td>
+                    <td>${b.phone || '-'}</td>
+                    <td>${b.id_number || '-'}</td>
+                    <td>${b.location || '-'}</td>
+                    <td><span class="badge bg-light text-dark border">${getPorterName(b.assigned_porter_id || b.porter_id)}</span></td>
+                    <td><span class="badge ${b.status === 'Inactive' ? 'bg-danger' : 'bg-success'} rounded-pill">${b.status || 'Active'}</span></td>
+                </tr>
+            `;
+        });
+    }
+
+    function filterEditList() {
+        const q = document.getElementById('edit_search_input').value.toLowerCase();
+        const container = document.getElementById('edit_board_list');
+        container.innerHTML = "";
+
+        const filtered = boardMembersList.filter(b => 
+            (b.full_name || b.name || '').toLowerCase().includes(q) ||
+            (b.phone || '').includes(q) ||
+            (b.id || '').toString().toLowerCase().includes(q)
+        );
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="p-2 text-muted small text-center">No board members found</div>';
+            return;
+        }
+
+        filtered.forEach(b => {
+            const item = document.createElement('a');
+            item.className = 'list-group-item list-group-item-action py-2';
+            item.href = 'javascript:void(0)';
+            item.onclick = () => loadEditBoardForm(b.id);
+            item.innerHTML = `<strong>${b.id}</strong> - ${b.full_name || b.name} <small class="text-muted">(${b.phone || 'No Phone'})</small>`;
+            container.appendChild(item);
+        });
+    }
+
+    function loadEditBoardForm(memberId) {
+        const b = boardMembersList.find(x => (x.id || '').toString() === memberId.toString());
+        if (!b) return;
+
+        document.getElementById('edit_target_id').value = b.id;
+        document.getElementById('edit_board_id_display').value = b.id;
+        document.getElementById('edit_board_name').value = b.full_name || b.name || '';
+        document.getElementById('edit_board_phone').value = b.phone || '';
+        document.getElementById('edit_board_idno').value = b.id_number || '';
+        document.getElementById('edit_board_location').value = b.location || '';
+        document.getElementById('edit_board_porter').value = (b.assigned_porter_id || b.porter_id || '').toString();
+        document.getElementById('edit_board_status').value = b.status || 'Active';
+    }
+
+    function renderDirectoryTable() {
+        const q = document.getElementById('directory_search').value.toLowerCase();
+        const tbody = document.getElementById('directory_tbody');
+        tbody.innerHTML = "";
+
+        const filtered = boardMembersList.filter(b => 
+            (b.full_name || b.name || '').toLowerCase().includes(q) ||
+            (b.phone || '').includes(q) ||
+            (b.id || '').toString().toLowerCase().includes(q) ||
+            (b.location || '').toLowerCase().includes(q)
+        );
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-3 text-muted">No matching records found</td></tr>`;
+            return;
+        }
+
+        filtered.forEach(b => {
+            tbody.innerHTML += `
+                <tr>
+                    <td><span class="badge bg-secondary font-monospace">${b.id}</span></td>
+                    <td class="fw-semibold text-dark">${b.full_name || b.name}</td>
+                    <td>${b.phone || '-'}</td>
+                    <td>${b.id_number || '-'}</td>
+                    <td>${b.location || '-'}</td>
+                    <td><span class="badge bg-light text-dark border">${getPorterName(b.assigned_porter_id || b.porter_id)}</span></td>
+                    <td><span class="badge ${b.status === 'Inactive' ? 'bg-danger' : 'bg-success'} rounded-pill">${b.status || 'Active'}</span></td>
+                </tr>
+            `;
+        });
+    }
+
+    function renderBatchAssignTable() {
+        const tbody = document.getElementById('batch_assign_tbody');
+        tbody.innerHTML = "";
+
+        if (boardMembersList.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center py-3 text-muted">No board members to assign</td></tr>`;
+            return;
+        }
+
+        boardMembersList.forEach(b => {
+            tbody.innerHTML += `
+                <tr>
+                    <td><input type="checkbox" class="board-batch-check" value="${b.id}"></td>
+                    <td><span class="badge bg-secondary font-monospace">${b.id}</span></td>
+                    <td class="fw-semibold text-dark">${b.full_name || b.name}</td>
+                    <td><span class="badge bg-light text-dark border">${getPorterName(b.assigned_porter_id || b.porter_id)}</span></td>
+                </tr>
+            `;
+        });
+    }
+
+    function toggleAllCheckboxes(master) {
+        document.querySelectorAll('.board-batch-check').forEach(cb => cb.checked = master.checked);
+    }
+
+    async function saveNewBoardMember(e) {
+        e.preventDefault();
+        const payload = {
+            id: document.getElementById('reg_board_id').value,
+            full_name: document.getElementById('reg_board_name').value,
+            phone: document.getElementById('reg_board_phone').value,
+            id_number: document.getElementById('reg_board_idno').value,
+            location: document.getElementById('reg_board_location').value,
+            assigned_porter_id: document.getElementById('reg_board_porter').value,
+            status: document.getElementById('reg_board_status').value
+        };
+
+        try {
+            const res = await fetch('/save_board_member', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                alert("Board Member saved successfully to gakuri_dairy.db!");
+                window.location.reload();
+            } else {
+                alert("Failed to save Board Member.");
+            }
+        } catch(err) {
+            console.error(err);
+            alert("Error communicating with backend.");
+        }
+    }
+
+    async function updateBoardRecord(e) {
+        e.preventDefault();
+        const payload = {
+            id: document.getElementById('edit_target_id').value,
+            full_name: document.getElementById('edit_board_name').value,
+            phone: document.getElementById('edit_board_phone').value,
+            id_number: document.getElementById('edit_board_idno').value,
+            location: document.getElementById('edit_board_location').value,
+            assigned_porter_id: document.getElementById('edit_board_porter').value,
+            status: document.getElementById('edit_board_status').value
+        };
+
+        try {
+            const res = await fetch('/update_board_member', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                alert("Board member updated successfully!");
+                window.location.reload();
+            } else {
+                alert("Failed to update board member.");
+            }
+        } catch(err) {
+            console.error(err);
+            alert("Error updating record.");
+        }
+    }
+
+    async function deleteBoardRecord() {
+        const id = document.getElementById('edit_target_id').value;
+        if (!id) return;
+        if (!confirm(`Are you sure you want to delete board member ID ${id}?`)) return;
+
+        try {
+            const res = await fetch('/delete_board_member', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({id: id})
+            });
+            if (res.ok) {
+                alert("Board member deleted successfully!");
+                window.location.reload();
+            } else {
+                alert("Failed to delete record.");
+            }
+        } catch(err) {
+            console.error(err);
+        }
+    }
+
+    async function applyBatchPorterAssign() {
+        const selectedPorter = document.getElementById('batch_porter_select').value;
+        const checkedBoxes = document.querySelectorAll('.board-batch-check:checked');
+        const ids = Array.from(checkedBoxes).map(cb => cb.value);
+
+        if (!selectedPorter || ids.length === 0) {
+            alert("Please select a porter and at least one board member.");
+            return;
+        }
+
+        try {
+            const res = await fetch('/assign_board_porter_batch', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({porter_id: selectedPorter, board_ids: ids})
+            });
+            if (res.ok) {
+                alert("Batch assignment successful!");
+                window.location.reload();
+            } else {
+                alert("Failed to re-assign porters.");
+            }
+        } catch(err) {
+            console.error(err);
+        }
+    }
+
+    function exportDirectoryExcel() {
+        const ws = XLSX.utils.json_to_sheet(boardMembersList);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Board Members");
+        XLSX.writeFile(wb, "Board_Members_Gakuri_Dairy.xlsx");
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        populatePorterDropdowns();
+        renderDashboardStats();
+        filterEditList();
+        renderDirectoryTable();
+        renderBatchAssignTable();
+    });
+</script>
+{% endblock %}
